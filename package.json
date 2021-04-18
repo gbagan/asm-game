@@ -14,6 +14,7 @@
     "build2": "spago build --purs-args '--codegen corefn,js'",
     "dce": "zephyr -e -f Main.main",
     "rollup": "rollup -c",
-    "buildcss": "sass src/index.scss dist/bundle.css"
+    "buildcss": "sass src/index.scss dist/bundle.css",
+    "deploy:test": "scp -r dist/* gbagan@connect.liris.cnrs.fr:~/asmtest/"
   }
 }

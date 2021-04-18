@@ -33,6 +33,15 @@ type State =
     ,   output :: Array Int
     }
 
+modifyRegister :: Register -> Instruction -> Instruction
+modifyRegister r instr = case instr of
+    CopyFrom _ -> CopyFrom r
+    CopyTo _ -> CopyTo r
+    Add _ -> Add r
+    Sub _ -> Sub r
+    Increment _ -> Increment r
+    Decrement _ -> Decrement r
+    x -> x
 
 step :: Program -> State -> Either String State
 step program state@{instrNo: InstrNo instrNo, currentValue, registers, input, output} =
@@ -57,7 +66,24 @@ step program state@{instrNo: InstrNo instrNo, currentValue, registers, input, ou
                                             , instrNo = InstrNo $ instrNo + 1
                                         }
                     _ -> Left "blah blah"
+
         CopyTo (Register r) -> case currentValue of
+                    Nothing -> Left "blah blah"
+                    Just {value} -> Right state {
+                                        registers = registers # updateAtIndices [r /\ Just value]
+                                      , instrNo = InstrNo $ instrNo + 1
+                                    }
+
+        Add (Register r) -> case currentValue /\ registers !! r of
+                    Just {value} /\ Just (Just val2) -> Right state {
+                                                        currentValue = Just {value: value + val2, comesFrom: FromRegister (Register r)}
+                                                      , instrNo = InstrNo $ instrNo + 1
+                                                    }
+
+                    Nothing /\ _ -> Left "blah blah"
+                    _ -> Left "blah blah"
+
+        Sub (Register r) -> case currentValue of
                     Nothing -> Left "blah blah"
                     Just {value} -> Right state {
                                         registers = registers # updateAtIndices [r /\ Just value]
@@ -80,4 +106,3 @@ step program state@{instrNo: InstrNo instrNo, currentValue, registers, input, ou
                         else
                             Right state{instrNo = InstrNo $ instrNo + 1}
         _ -> Left "not implemented"
-
