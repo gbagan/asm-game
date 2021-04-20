@@ -21,7 +21,7 @@ data Instruction =
     | Increment Register
     | Decrement Register
 
-type Program = Array Instruction
+type Program = Array {instr :: Instruction, id :: Int}
 
 data From = FromInput | FromRegister Register | FromNothing
 
@@ -45,16 +45,16 @@ modifyRegister r instr = case instr of
 
 step :: Program -> State -> Either String State
 step program state@{instrNo: InstrNo instrNo, currentValue, registers, input, output} =
-    program !! instrNo # maybe (Left "fatal error") case _ of
+    program !! instrNo <#> _.instr # maybe (Left "fatal error") case _ of
         Input -> case uncons input of
-                    Nothing -> Left "blah blah"
+                    Nothing -> Left "Input is empty"
                     Just {head, tail} -> Right state{
                                             currentValue = Just{value: head, comesFrom: FromInput} 
                                           , input = tail
                                           , instrNo = InstrNo $ instrNo + 1
                                           }
         Output -> case currentValue of
-                    Nothing -> Left "blah blah"
+                    Nothing -> Left "No value"
                     Just {value} -> Right state{
                                         currentValue = Nothing
                                       , output = cons value output
@@ -65,7 +65,7 @@ step program state@{instrNo: InstrNo instrNo, currentValue, registers, input, ou
                                               currentValue = Just {value, comesFrom: FromRegister (Register r)}
                                             , instrNo = InstrNo $ instrNo + 1
                                         }
-                    _ -> Left "blah blah"
+                    _ -> Left $ "Register " <> show r <> " is empty."
 
         CopyTo (Register r) -> case currentValue of
                     Nothing -> Left "blah blah"
@@ -81,14 +81,32 @@ step program state@{instrNo: InstrNo instrNo, currentValue, registers, input, ou
                                                     }
 
                     Nothing /\ _ -> Left "blah blah"
-                    _ -> Left "blah blah"
+                    _ -> Left $ "Register " <> show r <> " is empty."
 
-        Sub (Register r) -> case currentValue of
-                    Nothing -> Left "blah blah"
-                    Just {value} -> Right state {
-                                        registers = registers # updateAtIndices [r /\ Just value]
-                                      , instrNo = InstrNo $ instrNo + 1
-                                    }
+        Sub (Register r) -> case currentValue /\ registers !! r of
+                    Just {value} /\ Just (Just val2) -> Right state {
+                                                        currentValue = Just {value: value - val2, comesFrom: FromRegister (Register r)}
+                                                      , instrNo = InstrNo $ instrNo + 1
+                                                    }
+
+                    Nothing /\ _ -> Left "blah blah"
+                    _ -> Left $ "Register " <> show r <> " is empty."
+  
+        Increment (Register r) -> case registers !! r of
+                    Just (Just val2) -> Right state {
+                                                        currentValue = Just {value: val2 + 1, comesFrom: FromRegister (Register r)}
+                                                      , registers = registers # updateAtIndices [r /\ Just (val2 + 1)]
+                                                      , instrNo = InstrNo $ instrNo + 1
+                                                    }
+                    _ -> Left $ "Register " <> show r <> " is empty."
+
+        Decrement (Register r) -> case registers !! r of
+                    Just (Just val2) -> Right state {
+                                                        currentValue = Just {value: val2 - 1, comesFrom: FromRegister (Register r)}
+                                                      , registers = registers # updateAtIndices [r /\ Just (val2 - 1)]
+                                                      , instrNo = InstrNo $ instrNo + 1
+                                                    }
+                    _ -> Left $ "Register " <> show r <> " is empty."
 
         Jump no -> Right state{instrNo = no}
         JumpIfZero no -> case currentValue of
@@ -105,4 +123,3 @@ step program state@{instrNo: InstrNo instrNo, currentValue, registers, input, ou
                             Right state{instrNo = no}
                         else
                             Right state{instrNo = InstrNo $ instrNo + 1}
-        _ -> Left "not implemented"

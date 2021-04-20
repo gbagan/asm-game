@@ -2,51 +2,59 @@ html,body {
     user-select: none;
 }
 
-.main {
+.asm-main {
+    background-color: #DDDD80;
     display: flex;
 	flex-direction: row;
     justify-content: space-around;
+    align-items: center;
     position: relative;
+    width: 100%;
+    height: 100vh;
 }
 
-.program {
-    width: 10rem;
+.asm-program {
+    position: relative;
+    width: 10.5em;
     height: 60vh;
-    border: solid;
+    /* border: solid; */
     display: flex;
 	flex-direction: column;
 }
 
-.ui-cursor {
+.asm-ui-cursor {
     position: absolute;
     pointer-events: none;
-    margin-left: -2.5rem;
-    margin-top: -1rem;
+    margin-left: -2.5em;
+    margin-top: -1em;
 }
 
-.instruction-list {
-    width: 5rem;
+.asm-instruction-list {
+    width: 5em;
     height: 60vh;
     border: solid;
     display: flex;
     flex-direction: column;
 }
 
-.instruction {
+.asm-instruction {
     display: flex;
 	flex-direction: row;
 }
 
-.instruction-arrow {
-    width: 2rem;
-    height: 2rem;
+.asm-instruction-arrow {
+    position: absolute;
+    width: 2em;
+    height: 2em;
     color: red;
     font-weight: bold;
+    transition: top 500ms linear;
 }
 
-.instruction-no {
-    width: 2rem;
-    height: 2rem;
+.asm-instruction-no {
+    position: absolute;
+    width: 2em;
+    height: 2em;
     background-color: lightgreen;
     border-radius: 50%;
     display: flex;
@@ -55,85 +63,89 @@ html,body {
     align-items: center;
 }
 
-.instruction-data {
+.asm-instruction-data {
     display: flex;
 	flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    width: 6rem;
-    height: 2rem;
-    background-color: lightblue;
+    width: 6em;
+    height: 2em;
     border-radius: 0.3rem;
     text-align: center;
     border: thin solid black;
 }
 
-.instr-register {
+.asm-instr-register {
     display: flex;
 	flex-direction: row;
     justify-content: center;
     align-items: center;
-    width: 1.6rem;
-    height: 1.6rem;
-    margin: 0.2rem;
+    width: 1.6em;
+    height: 1.6em;
+    margin: 0.2em;
     border: thin solid black;
     background-color: yellow;
 }
 
-.value {
+.asm-value {
     display: flex;
 	flex-direction: row;
     justify-content: center;
     align-items: center;
-    width: 1.5rem;
-    height: 1.5rem;
+    width: 1.5em;
+    height: 1.5em;
     background-color: lightgrey;
-    border-radius: 0.3rem;
+    border-radius: 0.3em;
     border: thin solid black;
 }
 
-.register {
-    width: 2.5rem;
-    height: 2.5rem;
-    margin: 0.3rem;
+.asm-register {
+    width: 2.5em;
+    height: 2.5em;
+    margin: 0.3em;
     background-color: brown;
-    border-radius: 0.2rem;
+    border-radius: 0.2em;
     display: flex;
 	flex-direction: row;
     justify-content: center;
     align-items: center;
 }
 
-.register-selectable {
+.asm-program-instruction {
+    position: absolute;
+    transition: top 300ms linear;
+}
+
+.asm-register-selectable {
     border: thick solid green;
 }
 
-.state-center {
+.asm-state-center {
     display: flex;
     flex-direction: column;
     justify-content: space-around;
 }
 
-.state {
+.asm-state {
     width: 50vw;
     height: 50vh;
-    border: solid;
+    /* border: solid; */
     display: flex;
     flex-direction: row;
     justify-content: space-between;
 }
 
-.input,.output {
+.asm-input,.asm-output {
     display: flex;
     flex-direction: column;
     border: solid;
-    width: 2rem;
+    width: 2em;
     height: 100%;
 }
 
-.registers {
+.asm-registers {
     display: flex;
     flex-direction: row;
-    height: 2rem;
-    width: 12rem;
+    height: 2em;
+    width: 12em;
 }
