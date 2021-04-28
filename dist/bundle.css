@@ -14,13 +14,38 @@ html,body {
 }
 
 .asm-program {
-    position: relative;
-    width: 10.5em;
+    width: 12em;
     height: 60vh;
+    display: flex;
+	flex-direction: row;
+}
+
+.asm-program-1 {
+    position: relative;
+    width: 2em;
+    height: 100%;
     /* border: solid; */
     display: flex;
 	flex-direction: column;
 }
+
+.asm-program-2 {
+    position: relative;
+    width: 2em;
+    height: 100%;
+    display: flex;
+	flex-direction: column;
+}
+
+.asm-program-3 {
+    width: 12em;
+    height: 100%;
+    display: flex;
+	flex-direction: column;
+}
+
+
+
 
 .asm-ui-cursor {
     position: absolute;
@@ -52,7 +77,6 @@ html,body {
 }
 
 .asm-instruction-no {
-    position: absolute;
     width: 2em;
     height: 2em;
     background-color: lightgreen;
@@ -112,8 +136,7 @@ html,body {
 }
 
 .asm-program-instruction {
-    position: absolute;
-    transition: top 300ms linear;
+    transition: transform 200ms linear;
 }
 
 .asm-register-selectable {
@@ -138,14 +161,19 @@ html,body {
 .asm-input,.asm-output {
     display: flex;
     flex-direction: column;
-    border: solid;
-    width: 2em;
+    width: 3.5em;
     height: 100%;
+    background-color: snow;
 }
 
 .asm-registers {
     display: flex;
     flex-direction: row;
-    height: 2em;
     width: 12em;
+    background-color: snow;
+}
+
+.asm-objective {
+    width: 16em;
+    height: 16em;
 }

@@ -21,6 +21,10 @@ data Instruction =
     | Increment Register
     | Decrement Register
 
+derive instance eqInstrNo :: Eq InstrNo
+derive instance eqRegister :: Eq Register
+derive instance eqInstr :: Eq Instruction
+
 type Program = Array {instr :: Instruction, id :: Int}
 
 data From = FromInput | FromRegister Register | FromNothing

@@ -5,32 +5,39 @@ import Prelude
 import Data.Array ((!!))
 import Data.Array as Array
 import Data.Int (toNumber)
-import Data.Maybe (Maybe(..), maybe)
+import Data.Maybe (Maybe(..), maybe, isJust)
 import Data.Tuple.Nested ((/\))
 import Logic (Instruction(..), Register(..), InstrNo(..))
-import Model (Model, Msg(..), Message(..), Request(..), draggedInstr)
+import Model (Model, Msg(..), Message(..), Request(..), Dragged(..), draggedInstr)
 import Pha.Html (Html, Prop, EventHandler)
 import Pha.Html as H
+import Pha.Html.Attributes as P
 import Pha.Html.Events as E
-import Pha.Html.Keyed as K
 import Pha.Html.Util (pc)
 import Unsafe.Coerce (unsafeCoerce)
 import Web.Event.Event as Ev
 import Web.HTML.HTMLElement as HE
-import Web.UIEvent.MouseEvent as ME
+import Web.UIEvent.MouseEvent as MouseEvent
 
 view :: Model -> Html Msg
 view model@{program,
             state: state@{instrNo: InstrNo instrNo, currentValue, input, output, registers},
             request,
             pointer,
+            dragged,
+            dragAt,
             message
            } =
     H.div [H.class_ "asm-main", E.onMouseUp CancelDrag, E.on "mousemove" move]
     [   H.div []
         [   viewState
         ,   H.button [E.onClick Step, H.class_ "button"] [H.text "step"]
-        ,   H.button [E.onClick RunProgram, H.class_ "button is-primary"] [H.text "run"]
+        ,   H.button 
+                [   E.onClick RunProgram
+                ,   H.class_ "button is-primary"
+                ,   P.disabled $ Array.length program == 0
+                ]
+                [   H.text "run"]
         ,   H.button [E.onClick Reset, H.class_ "button is-danger"] [H.text "reset"]
         ,   H.div [H.class_ "asm-message"] [H.text $ case message of
                 NoMessage -> ""
@@ -40,6 +47,9 @@ view model@{program,
     ,   viewInstructions
     ,   viewProgram
     ,   H.fromMaybe $ viewPointer <$> pointer <*> draggedInstr model
+    ,   H.div [H.class_ "box asm-objective"]
+        [   H.text "For every pair of elements in the INPUT, make the sum and put the result in the OUTPUT."
+        ]
     ]
     where
         move e = map (SetPointer <<< Just) <$> pointerDecoder e
@@ -59,32 +69,45 @@ view model@{program,
             ]
 
         viewProgram =
-            K.div [H.class_ "box asm-program", E.stopPropagationOn "mouseup" $ E.always $ Just DropOnProgram /\ true] $
-                (Array.concat $ program # Array.mapWithIndex \i {id, instr} -> viewInstr' i id instr) <>
-                [   "arrow" /\ H.div
-                    [   H.class_ "asm-instruction-arrow"
-                    ,   H.style "left" "0"
-                    ,   H.style "top" $ show (instrNo * 2) <> "rem"
+            H.div
+                [H.class_ "box asm-program", E.stopPropagationOn "mouseup" $ E.always $ Just DropOnProgram /\ true]
+                [   H.div 
+                    [   H.class_ "asm-program-1"] 
+                    [   H.div
+                        [   H.class_ "asm-instruction-arrow"
+                        ,   H.style "left" "0"
+                        ,   H.style "top" $ show (instrNo * 2) <> "rem"
+                        ]
+                        [   H.text "➤"]
                     ]
-                    [   H.text "➤"]
+                ,   H.div
+                    [   H.class_ "asm-program-2"] (
+                        program # Array.mapWithIndex \i _ ->
+                            H.div
+                            [   H.class_ "asm-instruction-no"]
+                            [   H.text $ show i]
+                    )
+                ,   H.div
+                    [   H.class_ "asm-program-3"] $
+                        program # Array.mapWithIndex \i {id, instr} -> viewInstr' i id instr
                 ]
 
-        viewInstr' no id instr =
-            [   ("b" <> show id) /\ H.div
-                [   H.class_ "asm-instruction-no"
-                ,   H.style "left" "2rem"
-                ,   H.style "top" $ show (no * 2) <> "rem"
-                ]
-                [   H.text $ show no
-                ]
-            ,   ("c" <> show id) /\ viewInstr
-                [   H.class_ "asm-program-instruction"
-                ,   H.style "left" "4rem"
-                ,   H.style "top" $ show (no * 2) <> "rem"
-                ,   E.stopPropagationOn "mouseup" $ E.always $ Just (DropOnInstr no) /\ true
-                ,   E.onMouseDown (DragInstrNo no)
-                ] (Just no) instr
-            ]
+        viewInstr' idx id instr =
+            viewInstr
+            ([   H.class_ "asm-program-instruction"
+            ,   E.stopPropagationOn "mouseup" $ E.always $ Just (DropOnInstr idx) /\ true
+            ,   E.onMouseDown (DragInstrNo idx)
+            ,   E.onMouseEnter (DragAt $ Just idx)
+            ,   E.onMouseLeave (DragAt Nothing)
+            ] <>
+                if dragged == Just (DraggedInstrNo idx) then
+                    [H.style "display" "none"]
+                else if isJust dragged && isJust dragAt && dragAt <= Just idx then
+                    [H.style "transform" "translateY(2em)"] 
+                else
+                    []
+            )
+                (Just idx) instr
 
 viewPointer :: {x :: Number, y :: Number} -> Instruction -> Html Msg
 viewPointer {x, y} instr =
@@ -169,12 +192,12 @@ viewInstr props instrNo instr =
 
 viewInput :: Array Int -> Html Msg
 viewInput l =
-    H.div [H.class_ "asm-input"] $ l <#> \v ->
+    H.div [H.class_ "box asm-input"] $ l <#> \v ->
         H.div [H.class_ "asm-value"] [H.text $ show v]
 
 viewRegisters :: Boolean -> Array (Maybe Int) -> Html Msg
 viewRegisters selectable l =
-    H.div [H.class_ "asm-registers"] $ l # Array.mapWithIndex \i v ->
+    H.div [H.class_ "box asm-registers"] $ l # Array.mapWithIndex \i v ->
         H.div [H.class_ "asm-register", H.class' "asm-register-selectable" selectable, E.onClick (SelectRegister i)] [
             H.maybe v \val ->
                 H.div [H.class_ "asm-value"] [H.text $ show val]        
@@ -182,20 +205,20 @@ viewRegisters selectable l =
 
 viewOutput :: Array Int -> Html Msg
 viewOutput l =
-    H.div [H.class_ "asm-output"] $ l <#> \v ->
+    H.div [H.class_ "box asm-output"] $ l <#> \v ->
         H.div [H.class_ "asm-value"] [H.text $ show v]
 
 
 pointerDecoder ∷ EventHandler { x ∷ Number, y ∷ Number }
 pointerDecoder ev = do
-    case ME.fromEvent ev /\ Ev.currentTarget ev of
+    case MouseEvent.fromEvent ev /\ Ev.currentTarget ev of
         Just mouseEv /\ Just el → do
             -- dans l'implémentation actuelle en purescript, getBoundingClientRect ne s'applique
             -- qu'à des HTMLElement et pas à des SVG Elements
             let el' = unsafeCoerce el ∷ HE.HTMLElement
             {left, top, width, height} ← HE.getBoundingClientRect el'
             pure $ Just {
-                x: (toNumber(ME.clientX mouseEv) - left) / width,
-                y: (toNumber(ME.clientY mouseEv) - top) / height
+                x: (toNumber(MouseEvent.clientX mouseEv) - left) / width,
+                y: (toNumber(MouseEvent.clientY mouseEv) - top) / height
             }
         _ → pure Nothing
