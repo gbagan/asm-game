@@ -6,23 +6,20 @@ import Control.Monad.Rec.Class (tailRecM, Step(..))
 import Data.Array ((!!))
 import Data.Array as Array
 import Data.Either (Either(..))
-import Data.Maybe (Maybe(..), fromMaybe, isJust)
-import Data.String as String
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Time.Duration (Milliseconds(..))
 import Effect.Class (liftEffect)
+import Helpers as Helpers
 import Logic (Program, State, Level, Instruction, InstrNo(..), Register(..), modifyRegister, step)
 import Levels (getLevelById)
 import Pha.Update (Update, delay, get, modify_)
-import Web.HTML (window)
-import Web.HTML.Location as L
-import Web.HTML.Window (location)
 
 data Dragged = DraggedInstr Instruction | DraggedInstrNo Int
 derive instance eqDragged :: Eq Dragged
 
 data Request = RegisterRequest Int | NoRequest
 
-data Message = NoMessage | ErrorMessage String
+data Message = NoMessage | ErrorMessage String | SuccessMessage String
 
 type Model =
     {   program :: Program
@@ -32,33 +29,30 @@ type Model =
     ,   dragAt :: Maybe Int
     ,   pointer :: Maybe { x ∷ Number, y ∷ Number }
     ,   request :: Request
-    ,   id :: Int
     ,   message :: Message
+    ,   id :: Int
     }
 
-myProgram :: Program
-myProgram = []
-
-myState :: State
-myState =
+emptyState :: State
+emptyState =
     {   instrNo: InstrNo 0
     ,   currentValue: Nothing
     ,   registers: [Nothing, Nothing, Nothing]
-    ,   input: [4, 2, 5, 6]
+    ,   input: []
     ,   output: []
     }
 
-initModel :: Model
-initModel = initializeLevel
-    {   program: myProgram
-    ,   state: myState
-    ,   level: getLevelById "additions"
+initModel :: String -> Model
+initModel levelId = initializeLevel
+    {   program: []
+    ,   state: emptyState
+    ,   level: getLevelById levelId
     ,   dragged: Nothing
     ,   dragAt: Nothing
     ,   pointer: Nothing
     ,   request: NoRequest
-    ,   id: 0
     ,   message: NoMessage
+    ,   id: 0
     }
 
 data Msg = Step
@@ -76,7 +70,9 @@ data Msg = Step
          | HashChanged
 
 initializeLevel :: Model -> Model
-initializeLevel m@{level} = m{state = myState{input = level.input}, program = [], message = NoMessage}
+initializeLevel m@{level} = m{ state = emptyState{input = level.input, registers = level.registers}
+                             , message = NoMessage
+                             }
 
 draggedInstr :: Model -> Maybe Instruction
 draggedInstr model@{dragged, program} = join $ dragged <#> case _ of
@@ -88,29 +84,32 @@ update Step = modify_ \model@{program, state} ->
     case step program state of
         Left text -> model
         Right st2 -> model{state = st2}
-update RunProgram = get >>= \{state} → tailRecM go state where
-        go st = do
-            {program, level} <- get
-            case step program st of
+update RunProgram = tailRecM go 0 where
+        go counter = do
+            {program, level, state} <- get
+            case step program state of
                 Left text -> do
                     modify_ _{message = ErrorMessage text}
                     pure (Done unit)
                 Right st2 ->
-                    let InstrNo instrNo =  st2.instrNo in 
-                    if instrNo < Array.length program && (st2.input /= [] || isJust st2.currentValue) then do
-                        modify_ _{state = st2}
-                        delay $ Milliseconds 1000.0
-                        pure (Loop st2) 
-                    else if Array.reverse st2.output == level.expectedOutput then do
+                    let InstrNo instrNo =  st2.instrNo
+                        output = Array.reverse st2.output
+                    in 
+                    if output == level.expectedOutput then do
                         modify_ _{ state = st2
-                                 , message = ErrorMessage "Success"
+                                 , message = SuccessMessage $ "Success: " <> show (counter + 1) <> " steps, " <> show (Array.length program) <> " instructions."
+                                 }
+                        pure (Done unit)
+                    else if instrNo == Array.length program || output /= Array.take (Array.length output) level.expectedOutput then do
+                        modify_ _{ state = st2
+                                 , message = ErrorMessage $ "Expected " <> show level.expectedOutput <> " but received " <> show output
                                  }
                         pure (Done unit)
                     else do
-                        modify_ _{ state = st2
-                                 , message = ErrorMessage $ "Expected " <> show level.expectedOutput <> " but received " <> show (Array.reverse st2.output)
-                                 }
-                        pure (Done unit)
+                        modify_ _{state = st2}
+                        delay $ Milliseconds 1000.0
+                        pure $ Loop (counter + 1)
+  
 update Reset = modify_ initializeLevel
 update (AskRequest r) = modify_ _{request = r}
 update (SelectRegister r) = modify_ \model@{request, program} ->
@@ -161,8 +160,8 @@ update DropOnProgram = modify_ \model@{program, dragged, id} ->
                         }
 update (SetPointer p) = modify_ _{pointer = p}
 update HashChanged = do
-    hash <- liftEffect $ window >>= location >>= L.hash
-    modify_ $ initializeLevel <<< _{level = getLevelById (String.drop 1 hash)}
+    hash <- liftEffect $ Helpers.getHash
+    modify_ $ initializeLevel <<< _{program = [], level = getLevelById hash}
 
 arrayMove :: Int -> Int -> Int -> Program -> Program
 arrayMove from to newId t = fromMaybe t do

@@ -41,6 +41,7 @@ type Level =
     {   id :: String
     ,   title :: String  
     ,   input :: Array Int
+    ,   registers :: Array (Maybe Int)
     ,   expectedOutput :: Array Int
     ,   availableInstructions :: Array Instruction
     ,   instructionText :: String
@@ -60,7 +61,7 @@ step :: Program -> State -> Either String State
 step program state@{instrNo: InstrNo instrNo, currentValue, registers, input, output} =
     program !! instrNo <#> _.instr # maybe (Left "fatal error") case _ of
         Input -> case uncons input of
-                    Nothing -> Left "Input is empty"
+                    Nothing -> Left "Inbox is empty"
                     Just {head, tail} -> Right state{
                                             currentValue = Just{value: head, comesFrom: FromInput} 
                                           , input = tail
@@ -81,7 +82,7 @@ step program state@{instrNo: InstrNo instrNo, currentValue, registers, input, ou
                     _ -> Left $ "Register " <> show r <> " is empty."
 
         CopyTo (Register r) -> case currentValue of
-                    Nothing -> Left "blah blah"
+                    Nothing -> Left "No value"
                     Just {value} -> Right state {
                                         registers = registers # updateAtIndices [r /\ Just value]
                                       , instrNo = InstrNo $ instrNo + 1
@@ -93,7 +94,7 @@ step program state@{instrNo: InstrNo instrNo, currentValue, registers, input, ou
                                                       , instrNo = InstrNo $ instrNo + 1
                                                     }
 
-                    Nothing /\ _ -> Left "blah blah"
+                    Nothing /\ _ -> Left "No value"
                     _ -> Left $ "Register " <> show r <> " is empty."
 
         Sub (Register r) -> case currentValue /\ registers !! r of
@@ -102,7 +103,7 @@ step program state@{instrNo: InstrNo instrNo, currentValue, registers, input, ou
                                                       , instrNo = InstrNo $ instrNo + 1
                                                     }
 
-                    Nothing /\ _ -> Left "blah blah"
+                    Nothing /\ _ -> Left "No value"
                     _ -> Left $ "Register " <> show r <> " is empty."
   
         Increment (Register r) -> case registers !! r of

@@ -45,6 +45,7 @@ view model@{program,
         ,   H.button [E.onClick Reset, H.class_ "button is-danger"] [H.text "reset"]
         ,   H.div [H.class_ "asm-message"] [H.text $ case message of
                 NoMessage -> ""
+                SuccessMessage msg -> msg 
                 ErrorMessage msg -> "Error: " <> msg
             ]
         ]
@@ -83,7 +84,7 @@ view model@{program,
             H.div [H.class_ "box asm-state"]
             [   viewInput input
             ,   H.div [H.class_ "asm-state-center"]
-                [   H.div [H.class_ "asm-value"] [H.text $ maybe "" (show <<< _.value) currentValue]
+                [   H.maybe currentValue \{value} -> H.div [H.class_ "asm-value asm-current-value"] [H.text $ show value]
                 ,   viewRegisters areRegistersSelectable registers
                 ]
             ,   viewOutput output
