@@ -13,6 +13,12 @@ html,body {
     height: 100vh;
 }
 
+.asm-level-dropdown {
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
 .asm-program {
     width: 12em;
     height: 60vh;

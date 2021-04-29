@@ -4,11 +4,13 @@ import Prelude
 
 import Data.Array ((!!))
 import Data.Array as Array
+import Data.Array.NonEmpty as NonEmptyArray
 import Data.Int (toNumber)
 import Data.Maybe (Maybe(..), maybe, isJust)
 import Data.Tuple.Nested ((/\))
 import Logic (Instruction(..), Register(..), InstrNo(..))
 import Model (Model, Msg(..), Message(..), Request(..), Dragged(..), draggedInstr)
+import Levels (levels)
 import Pha.Html (Html, Prop, EventHandler)
 import Pha.Html as H
 import Pha.Html.Attributes as P
@@ -21,6 +23,7 @@ import Web.UIEvent.MouseEvent as MouseEvent
 
 view :: Model -> Html Msg
 view model@{program,
+            level,
             state: state@{instrNo: InstrNo instrNo, currentValue, input, output, registers},
             request,
             pointer,
@@ -29,7 +32,8 @@ view model@{program,
             message
            } =
     H.div [H.class_ "asm-main", E.onMouseUp CancelDrag, E.on "mousemove" move]
-    [   H.div []
+    [   levelDropdown
+    ,   H.div []
         [   viewState
         ,   H.button [E.onClick Step, H.class_ "button"] [H.text "step"]
         ,   H.button 
@@ -44,11 +48,11 @@ view model@{program,
                 ErrorMessage msg -> "Error: " <> msg
             ]
         ]
-    ,   viewInstructions
+    ,   viewInstructions level.availableInstructions
     ,   viewProgram
     ,   H.fromMaybe $ viewPointer <$> pointer <*> draggedInstr model
     ,   H.div [H.class_ "box asm-objective"]
-        [   H.text "For every pair of elements in the INPUT, make the sum and put the result in the OUTPUT."
+        [   H.text level.instructionText
         ]
     ]
     where
@@ -57,6 +61,23 @@ view model@{program,
         areRegistersSelectable = case request of
             RegisterRequest _ -> true
             _ -> false
+
+        levelDropdown =
+            H.div [H.class_ "dropdown asm-level-dropdown is-hoverable"]  --, H.class' "is-active" isLevelDropdownActive]
+            [   H.div [H.class_ "dropdown-trigger"]
+                [   H.button [H.class_ "button"]
+                    [   H.span [] [H.text "Level"]
+                    ,   H.span [H.class_ "icon is-small"]
+                        [   H.h "i" [H.class_ "fas fa-angle-down"] []]
+                    ]
+                ]
+            ,   H.div [H.class_"dropdown-menu"]
+                [   H.div [H.class_"dropdown-content"] $
+                    NonEmptyArray.toArray levels <#> \{id, title} ->
+                        H.a [P.href ("#" <> id), H.class_ "dropdown-item"]
+                        [   H.text title]
+                ]
+            ]
 
         viewState =
             H.div [H.class_ "box asm-state"]
@@ -114,10 +135,10 @@ viewPointer {x, y} instr =
     H.div [H.class_ "asm-ui-cursor", H.style "left" $ pc x, H.style "top" $ pc y]
         [viewInstr [] Nothing instr]
 
-viewInstructions :: Html Msg
-viewInstructions =
+viewInstructions :: Array Instruction -> Html Msg
+viewInstructions instrs =
     H.div [H.class_ "box"] $ 
-        [Input, Output, CopyFrom (Register 0), CopyTo (Register 0), Add (Register 0), Increment (Register 0), Decrement (Register 0), Jump (InstrNo 0)] <#> \instr -> 
+        instrs <#> \instr -> 
             viewInstr [E.onMouseDown (DragInstr instr)] Nothing instr
 
 instructionColor :: Instruction -> String

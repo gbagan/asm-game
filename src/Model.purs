@@ -7,9 +7,15 @@ import Data.Array ((!!))
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), fromMaybe, isJust)
+import Data.String as String
 import Data.Time.Duration (Milliseconds(..))
-import Logic (Program, State, Instruction, InstrNo(..), Register(..), modifyRegister, step)
-import Pha.Update (Update, delay, get, gets, modify_)
+import Effect.Class (liftEffect)
+import Logic (Program, State, Level, Instruction, InstrNo(..), Register(..), modifyRegister, step)
+import Levels (getLevelById)
+import Pha.Update (Update, delay, get, modify_)
+import Web.HTML (window)
+import Web.HTML.Location as L
+import Web.HTML.Window (location)
 
 data Dragged = DraggedInstr Instruction | DraggedInstrNo Int
 derive instance eqDragged :: Eq Dragged
@@ -21,6 +27,7 @@ data Message = NoMessage | ErrorMessage String
 type Model =
     {   program :: Program
     ,   state :: State
+    ,   level :: Level
     ,   dragged :: Maybe Dragged
     ,   dragAt :: Maybe Int
     ,   pointer :: Maybe { x ∷ Number, y ∷ Number }
@@ -41,13 +48,11 @@ myState =
     ,   output: []
     }
 
-expectedOutput :: Array Int
-expectedOutput = [11, 6]
-
 initModel :: Model
-initModel =
+initModel = initializeLevel
     {   program: myProgram
     ,   state: myState
+    ,   level: getLevelById "additions"
     ,   dragged: Nothing
     ,   dragAt: Nothing
     ,   pointer: Nothing
@@ -68,6 +73,10 @@ data Msg = Step
          | DropOnProgram
          | CancelDrag
          | SetPointer (Maybe { x ∷ Number, y ∷ Number })
+         | HashChanged
+
+initializeLevel :: Model -> Model
+initializeLevel m@{level} = m{state = myState{input = level.input}, program = [], message = NoMessage}
 
 draggedInstr :: Model -> Maybe Instruction
 draggedInstr model@{dragged, program} = join $ dragged <#> case _ of
@@ -81,7 +90,7 @@ update Step = modify_ \model@{program, state} ->
         Right st2 -> model{state = st2}
 update RunProgram = get >>= \{state} → tailRecM go state where
         go st = do
-            program <- gets _.program
+            {program, level} <- get
             case step program st of
                 Left text -> do
                     modify_ _{message = ErrorMessage text}
@@ -91,18 +100,18 @@ update RunProgram = get >>= \{state} → tailRecM go state where
                     if instrNo < Array.length program && (st2.input /= [] || isJust st2.currentValue) then do
                         modify_ _{state = st2}
                         delay $ Milliseconds 1000.0
-                        pure (Loop st2)
-                    else if st2.output == expectedOutput then do
+                        pure (Loop st2) 
+                    else if Array.reverse st2.output == level.expectedOutput then do
                         modify_ _{ state = st2
                                  , message = ErrorMessage "Success"
                                  }
                         pure (Done unit)
                     else do
                         modify_ _{ state = st2
-                                 , message = ErrorMessage $ "Expected " <> show (Array.reverse expectedOutput) <> " but received " <> show st2.output
+                                 , message = ErrorMessage $ "Expected " <> show level.expectedOutput <> " but received " <> show (Array.reverse st2.output)
                                  }
                         pure (Done unit)
-update Reset = modify_ _{state = myState, message = NoMessage}
+update Reset = modify_ initializeLevel
 update (AskRequest r) = modify_ _{request = r}
 update (SelectRegister r) = modify_ \model@{request, program} ->
     case request of
@@ -151,6 +160,9 @@ update DropOnProgram = modify_ \model@{program, dragged, id} ->
                         ,   id = id + 1
                         }
 update (SetPointer p) = modify_ _{pointer = p}
+update HashChanged = do
+    hash <- liftEffect $ window >>= location >>= L.hash
+    modify_ $ initializeLevel <<< _{level = getLevelById (String.drop 1 hash)}
 
 arrayMove :: Int -> Int -> Int -> Program -> Program
 arrayMove from to newId t = fromMaybe t do

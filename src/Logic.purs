@@ -37,6 +37,15 @@ type State =
     ,   output :: Array Int
     }
 
+type Level =
+    {   id :: String
+    ,   title :: String  
+    ,   input :: Array Int
+    ,   expectedOutput :: Array Int
+    ,   availableInstructions :: Array Instruction
+    ,   instructionText :: String
+    }
+
 modifyRegister :: Register -> Instruction -> Instruction
 modifyRegister r instr = case instr of
     CopyFrom _ -> CopyFrom r
