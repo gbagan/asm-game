@@ -1,0 +1,19 @@
+@import "base.css";
+
+:root {
+  --text: #6b6375;
+  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+
+  --jump-color: #0c4a6e;
+  --jump-bg: linear-gradient(135deg, #e0f2fe, #bae6fd);
+  --jump-border: #38bdf8;
+
+  font: 2vmin var(--sans);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html, body {
+  user-select: none;
+}
