@@ -2,7 +2,7 @@
   import { tick } from "svelte";
 
   type Props = {
-    container: HTMLDivElement;
+    container?: HTMLDivElement;
     blockId: string | null;
     layoutVersion: number;
   };
@@ -16,7 +16,7 @@
     await tick();
 
     requestAnimationFrame(() => {
-      if (!blockId) {
+      if (!container || !blockId) {
         visible = false;
         return;
       }

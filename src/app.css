@@ -8,7 +8,7 @@
   --jump-bg: linear-gradient(135deg, #e0f2fe, #bae6fd);
   --jump-border: #38bdf8;
 
-  font: 2vmin var(--sans);
+  font: min(2vh, calc(2vw * 10 / 16)) var(--sans);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

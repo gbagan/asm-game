@@ -8,10 +8,24 @@
     ProgramBlock,
     PaletteBlock,
     DraggedBlock,
-    InstructionType
+    InstructionType,
+
+    InstructionBlock
+
   } from "../lib/types";
+    import ExecutionPointer from "./ExecutionPointer.svelte";
+    import { tick } from "svelte";
 
   const FLIP_DURATION = 220;
+  const LABEL = {
+    input: "input",
+    output: "output",
+    jump: "jump",
+    "jump-if-zero": "jump if zero",
+    "jump-if-negative": "jump if < 0",
+    "copy-from": "copy from",
+    "copy-to": "copy to"
+  }
 
   type Props = {
     registers: string [];
@@ -19,47 +33,42 @@
 
   let { registers }: Props = $props();
 
-  let container = $state<HTMLDivElement | undefined>();
+  let container: HTMLDivElement | undefined = $state();
 
   let isAnimatingLayout = $state(false);
   let layoutVersion = $state(0);
   let draggingSource = $state<"palette" | "program" | null>(null);
+  let currentInstructionId = $state<string | null>("b2"); // todo
 
   let palette = $state.raw<PaletteBlock[]>([
     {
       id: "palette-input",
       type: "input",
-      label: "input",
       fromPalette: true
     },
     {
       id: "palette-output",
       type: "output",
-      label: "output",
       fromPalette: true
     },
     {
       id: "palette-jump",
       type: "jump",
-      label: "jump",
       fromPalette: true
     },
     {
       id: "palette-jump-if-zero",
       type: "jump-if-zero",
-      label: "jump if zero",
       fromPalette: true
     },
     {
       id: "palette-copy-from",
       type: "copy-from",
-      label: "copy from",
       fromPalette: true
     },
     {
       id: "palette-copy-to",
       type: "copy-to",
-      label: "copy to",
       fromPalette: true
     }
   ]);
@@ -68,14 +77,12 @@
     {
       id: "b1",
       kind: "instruction",
-      type: "input",
-      label: "input"
+      type: "input"
     },
     {
       id: "b2",
       kind: "instruction",
-      type: "output",
-      label: "output"
+      type: "output"
     }
   ]);
 
@@ -83,15 +90,11 @@
     return "fromPalette" in block;
   }
 
-  function createInstructionBlock(
-    type: InstructionType,
-    label: string
-  ): ProgramBlock {
-    const block: ProgramBlock = {
+  function createInstructionBlock(type: InstructionType): ProgramBlock {
+    const block: InstructionBlock = {
       id: crypto.randomUUID(),
       kind: "instruction",
-      type,
-      label
+      type
     };
     if (type === "copy-from" || type === "copy-to") {
       return { ...block, register: 0 };
@@ -99,25 +102,19 @@
     return block;
   }
 
-  function createJumpPair(
-    type: "jump" | "jump-if-zero",
-    label: string
-  ): ProgramBlock[] {
+  function createJumpPair(type: "jump" | "jump-if-zero"): ProgramBlock[] {
     const jumpId = crypto.randomUUID();
     const targetId = crypto.randomUUID();
-
     return [
       {
         id: jumpId,
         kind: "instruction",
         type,
-        label,
         targetId
       },
       {
         id: targetId,
         kind: "jump-target",
-        label: "cible",
         ownerJumpId: jumpId
       }
     ];
@@ -125,16 +122,16 @@
 
   function createBlocksFromPalette(block: PaletteBlock): ProgramBlock[] {
     if (block.type === "jump" || block.type === "jump-if-zero") {
-      return createJumpPair(block.type, block.label);
+      return createJumpPair(block.type);
     } else { 
-      return [ createInstructionBlock(block.type, block.label) ];
+      return [ createInstructionBlock(block.type) ];
     }
   }
 
-  function insertBlocksAt(index: number, newBlocks: ProgramBlock[]) {
+  function insertBlocksAt(index: number, block: PaletteBlock) {
     blocks = [
       ...blocks.slice(0, index),
-      ...newBlocks,
+      ...createBlocksFromPalette(block),
       ...blocks.slice(index)
     ];
     startLayoutAnimation();
@@ -159,36 +156,29 @@
 
   function handleDropZoneDrop(state: DragDropState<DraggedBlock>) {
     const { draggedItem, targetContainer } = state;
-
     const dropIndex = Number.parseInt(String(targetContainer), 10);
 
     if (Number.isNaN(dropIndex)) return;
 
     if (isPaletteBlock(draggedItem)) {
-      insertBlocksAt(
-        dropIndex,
-        createBlocksFromPalette(draggedItem)
-      );
-      return;
+      insertBlocksAt(dropIndex, draggedItem);
+    } else {
+      moveBlock(draggedItem, dropIndex);
     }
-
-    moveBlock(draggedItem, dropIndex);
   }
 
   function removeDraggedBlock(draggedItem: DraggedBlock) {
     if (isPaletteBlock(draggedItem)) return;
 
-    const block = blocks.find((b) => b.id === draggedItem.id);
-    if (!block) return;
     // Si on supprime un jump, on supprime aussi sa cible.
-    if (block.kind === "instruction" && block.targetId) {
+    if (draggedItem.kind === "instruction") {
       blocks = blocks.filter(b =>
-        b.id !== block.id && b.id !== block.targetId
+        b.id !== draggedItem.id && b.id !== draggedItem.targetId
       );
       startLayoutAnimation();
-    } else if (block.kind === "jump-target") {
+    } else if (draggedItem.kind === "jump-target") {
       blocks = blocks.filter(b =>
-        b.id !== block.id && b.id !== block.ownerJumpId
+        b.id !== draggedItem.id && b.id !== draggedItem.ownerJumpId
       );
       startLayoutAnimation();
     }
@@ -235,6 +225,40 @@
     }
     closeRegisterPopup();
   }
+
+  async function scrollCurrentInstructionIntoView() {
+    await tick();
+    if (!container || currentInstructionId === null) return;
+    const blockEl = container.querySelector<HTMLElement>(
+      `[data-block-id="${currentInstructionId}"]`
+    );
+
+    if (!blockEl) return;
+    const containerRect = container.getBoundingClientRect();
+    const blockRect = blockEl.getBoundingClientRect();
+    const padding = 24;
+    const blockTop = blockRect.top - containerRect.top;
+    const blockBottom = blockRect.bottom - containerRect.top;
+    const visibleTop = padding;
+    const visibleBottom = container.clientHeight - padding;
+
+    if (blockTop < visibleTop) {
+      container.scrollBy({
+        top: blockTop - visibleTop,
+        behavior: "smooth"
+      });
+    } else if (blockBottom > visibleBottom) {
+      container.scrollBy({
+        top: blockBottom - visibleBottom,
+        behavior: "smooth"
+      });
+    }
+  }
+
+  $effect(() => {
+    currentInstructionId;
+    scrollCurrentInstructionIntoView();
+  });
 </script>
 
 {#snippet blockView(block: ProgramBlock, index: number)}
@@ -265,10 +289,9 @@
       }
     }}
   >
-    <div class="block-header">
-      <div class="block-label">
+    <div class="block-label">
         {#if block.kind === "instruction"}
-          <strong>{block.label}</strong>
+          <strong>{LABEL[block.type]}</strong>
           {#if block.type === "copy-from" || block.type === "copy-to"}
             <button
               class="register-badge"
@@ -280,7 +303,6 @@
             </button>
           {/if}
         {/if}
-      </div>
     </div>
     {#if block.kind === "instruction" 
       && (block.type === "copy-from" || block.type === "copy-to")
@@ -322,7 +344,7 @@
             }
           }}
         >
-          {block.label}
+          {LABEL[block.type]}
         </div>
       {/each}
     </div>
@@ -343,10 +365,8 @@
   <main class="editor-panel">
     <h2>Programme</h2>
 
-    <div
-      class="editor"
-      bind:this={container}
-    >
+    <div class="editor" bind:this={container}>
+      <ExecutionPointer {container} blockId={currentInstructionId} {layoutVersion} />
       <Arrows {blocks} {container} hidden={isAnimatingLayout} {layoutVersion} />
 
       <div class="program">
@@ -409,7 +429,7 @@
     border: 2px solid #ddd;
     border-radius: 12px;
     padding: 1rem;
-    background: #fafafa;
+    background: rgba(255, 255, 255, 0.7);
   }
 
   .palette-list {
@@ -469,9 +489,10 @@
     position: relative;
     height: calc(100% - 2rem);
     min-height: 0;
+    width: 20rem;
     overflow: auto;
     border: 2px solid #ddd;
-    border-radius: 12px;
+    border-radius: 0.7rem;
     background: #f7f7fb;
     overflow-y: auto;
     overflow-x: hidden;
@@ -480,7 +501,7 @@
   .program {
     position: relative;
     z-index: 2;
-    min-height: 100%;
+    height: 100%;
     padding: 1rem 6rem 1rem 3rem;
     display: flex;
     flex-direction: column;
@@ -526,7 +547,7 @@
 
   .empty-drop-zone {
     width: 260px;
-    min-height: 80px;
+    height: 80px;
     border: 2px dashed #aaa;
     border-radius: 12px;
     color: #666;
@@ -540,14 +561,12 @@
     cursor: grab;
     position: relative;
     z-index: 2;
-    
-    padding: 0.75rem;
     border-radius: 10px;
     box-shadow: 0 2px 6px rgb(0 0 0 / 0.12);
   }
 
   .program-block {
-    width: 11rem;
+    width: 8rem;
     height: 2.5rem;
     border: 2px solid #ccc;
     display: flex;
@@ -602,9 +621,9 @@
   }
 
   .jump-target-block {
-    width: 7rem;
+    width: 6rem;
     height: 2rem;
-    margin-left: 2rem;
+    margin-left: 1rem;
     border: 2px dashed #777;
     background: linear-gradient(135deg, #f8fafc, #e2e8f0);
     border-color: #94a3b8;
@@ -621,13 +640,6 @@
     display: grid;
     place-items: center;
     font-size: 0.85rem;
-  }
-
-  .block-header {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    gap: 0.5rem;
   }
 
   :global(.drop-before::before),

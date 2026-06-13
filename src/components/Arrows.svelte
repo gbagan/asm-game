@@ -4,7 +4,7 @@
 
   type Props = {
     blocks: ProgramBlock[];
-    container: HTMLDivElement;
+    container?: HTMLDivElement;
     hidden: boolean;
     layoutVersion: number;
   };
@@ -99,7 +99,7 @@
 
     const distanceY = Math.abs(y2 - y1);
 
-    const out = Math.max(10, Math.min(80, distanceY / 3));
+    const out = Math.max(10, Math.min(70, distanceY / 4));
 
     const sideX = Math.max(x1, x2) + out;
 
