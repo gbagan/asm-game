@@ -1,7 +1,7 @@
 <script lang="ts">
   import { filterMap, sleep } from "@gbagan/utils";
   import { tick } from "svelte";
-  import type { ProgramBlock } from "../lib/types";
+  import type { LevelInfo, ProgramBlock } from "../lib/types";
 
   type TokenLocation =
     | { kind: "input"; index: number }
@@ -27,10 +27,14 @@
     initialInput: number[];
     registers: (number | null)[];
     registerNames: string[];
+    expectedOutput: number[];
     setProgramCounter: (pc: number) => void;
+    onQuitLevel: () => void;
+    saveInfo: (fn: (info: LevelInfo) => LevelInfo) => void;
   };
 
-  let { program, initialInput, registers, registerNames, setProgramCounter }: Props = $props();
+  let { program, initialInput, registers, registerNames, expectedOutput,
+    setProgramCounter, onQuitLevel, saveInfo }: Props = $props();
 
   let container = $state<HTMLDivElement | undefined>();
   let inputSlots: Array<HTMLDivElement | undefined> = $state([]);
@@ -41,31 +45,45 @@
   let calcRightSlot = $state<HTMLDivElement | undefined>();
   let calcResultSlot = $state<HTMLDivElement | undefined>();
 
+  let layoutVersion = $state(0);
   let showCalcArea = $state(false);
   let tokenPositions = $state<Record<string, Point>>({});
 
-  let tokens: NumberToken[] = $derived([
-    ...initialInput.map((value, index) => ({
-      id: crypto.randomUUID(),
-      value,
-      location: { kind: "input", index }
-    })) as NumberToken[],
-    ...filterMap(registers, (value, index) =>
-      value === null 
-      ? null 
-      : {
+  let tokens: NumberToken[] = $derived.by(() => {
+    layoutVersion;
+    return [
+      ...initialInput.map((value, index) => ({
         id: crypto.randomUUID(),
         value,
-        location: { kind: "register", index}
-      }
-    ) as NumberToken[]
-  ]);
+        location: { kind: "input", index }
+      })) as NumberToken[],
+      ...filterMap(registers, (value, index) =>
+        value === null 
+        ? null 
+        : {
+          id: crypto.randomUUID(),
+          value,
+          location: { kind: "register", index}
+        }
+      ) as NumberToken[]
+    ]
+  });
 
   let pc = $derived.by(() => {
     program;
     initialInput;
+    layoutVersion;
     return 0
   })
+
+  let executionErrorMessage = $state<string | null>(null);
+  let successDialog = $state(false);
+
+  function closeExecutionErrorDialog() {
+    executionErrorMessage = null;
+    layoutVersion += 1;
+    setProgramCounter(0);
+  }
 
   function visibleTokens() {
     return tokens.filter((token) => token.location.kind !== "hidden");
@@ -74,13 +92,13 @@
   function inputTokens() {
     return tokens
       .filter(token => token.location.kind === "input")
-      .sort((a, b) => a.location.index - b.location.index);
+      .sort((a, b) => (a.location as any).index - (b.location as any).index);
   }
 
   function outputTokens() {
     return tokens
       .filter((token) => token.location.kind === "output")
-      .sort((a, b) => a.location.index - b.location.index);
+      .sort((a, b) => (a.location as any).index - (b.location as any).index);
   }
 
   function currentToken() {
@@ -156,7 +174,7 @@
   function normalizeInputIndexes(nextTokens: NumberToken[]): NumberToken[] {
     const idsInInputOrder = nextTokens
       .filter(token => token.location.kind === "input")
-      .sort((a, b) => a.location.index - b.location.index)
+      .sort((a, b) => (a.location as any).index - (b.location as any).index)
       .map(token => token.id);
 
     return nextTokens.map((token) => {
@@ -236,7 +254,7 @@
     } else if (instruction.type === "input") {
       const firstInputToken = inputTokens()[0];
       if (!firstInputToken) {
-        throw new Error("Input vide");
+        throw new Error("Tente d'exécuter l'instruction Input alors que l'entrée est vide");
       }
 
       hideTokenAt("current");
@@ -246,7 +264,7 @@
     } else if (instruction.type === "output") {
       const token = currentToken();
       if (!token) {
-        throw new Error("Valeur courante vide");
+        throw new Error("Tente d'exécuter l'instruction Output alors que la valeur courante est vide");
       }
 
       pushOutputTokensDown(token.id);
@@ -255,11 +273,19 @@
         index: 0
       });
       await sleep(250);
+      let output = outputTokens();
+      const actual = output[0].value;
+      const expected = expectedOutput[output.length - 1];
+      if (actual !== expected) {
+        throw new Error(`La valeur ${actual} n'était pas attendue dans l'Output`);
+      }
+
+
       pc += 1;
     } else if (instruction.type === "copy-to") {
       const token = currentToken();
       if (!token) {
-        throw new Error("Valeur courante vide");
+        throw new Error("Tente de copier la valeur courante alors qu'elle est vide");
       }
       hideTokenAt("register", instruction.register);
 
@@ -273,7 +299,7 @@
     } else if (instruction.type === "copy-from") {
       const token = registerToken(instruction.register!);
       if (!token) {
-        throw new Error("Registre vide");
+        throw new Error("Tente de copier un registre vide");
       }
 
       hideTokenAt("current");
@@ -289,8 +315,8 @@
       const current = currentToken();
       const register = registerToken(instruction.register!);
 
-      if (!current) throw new Error("Valeur courante vide");
-      if (!register) throw new Error("Registre vide");
+      if (!current) throw new Error("Tente de faire une addition alors que la valeur courante est vide");
+      if (!register) throw new Error("Tente de faire une addition avec un registre vide");
 
       showCalcArea = true;
       await tick();
@@ -364,13 +390,48 @@
     });
   }
 
+  function isSuccess() {
+    let input = inputTokens();
+    let output = outputTokens();
+    return input.length === 0 && output.length === expectedOutput.length;
+  }
+
   async function run() {
     setProgramCounter(0);
     while (pc < program.length) {
-      await executeInstruction(program[pc]);
+      try {
+        await executeInstruction(program[pc]);
+      } catch (e) {
+        executionErrorMessage = (e as Error).message;
+        return
+      }
+
       setProgramCounter(pc);
+      if (isSuccess()) {
+        successDialog = true; // todo
+      }
+
       await sleep(300);
     }
+  }
+
+  function restartLevel() {
+    saveInfo(info => ({...info, completed: true, program}));
+    successDialog = false;
+    layoutVersion += 1;
+  }
+
+  function instructionCount() {
+    return 1000;
+  }
+
+  function stepCount() {
+    return 1000;
+  }
+
+  function handleQuitLevel() {
+    saveInfo(info => ({...info, completed: true, program}));
+    onQuitLevel();
   }
 
 </script>
@@ -451,6 +512,113 @@
     <button class="button fast">Accélerer</button>
   </div>
 </div>
+{#if executionErrorMessage !== null}
+  <div
+    class="execution-error-backdrop"
+    role="presentation"
+    onclick={closeExecutionErrorDialog}
+  >
+    <dialog
+      class="dialog execution-error-dialog"
+      open
+      aria-labelledby="execution-error-title"
+      onclick={event => event.stopPropagation()}
+    >
+      <header class="execution-error-header">
+        <h2 id="execution-error-title">
+          Erreur d’exécution
+        </h2>
+
+        <button
+          class="execution-error-close"
+          type="button"
+          onclick={closeExecutionErrorDialog}
+          aria-label="Fermer"
+        >
+          ×
+        </button>
+      </header>
+
+      <div class="execution-error-content">
+        <p>{executionErrorMessage}</p>
+      </div>
+
+      <footer class="execution-error-footer">
+        <button
+          class="execution-error-ok"
+          type="button"
+          onclick={closeExecutionErrorDialog}
+        >
+          Compris
+        </button>
+      </footer>
+    </dialog>
+  </div>
+{/if}
+{#if successDialog}
+  <div
+    class="success-dialog-backdrop"
+    role="presentation"
+  >
+    <dialog
+      class="dialog success-dialog"
+      open
+      aria-labelledby="success-dialog-title"
+    >
+      <header class="success-dialog-header">
+        <div class="success-icon">✓</div>
+
+        <div>
+          <h2 id="success-dialog-title">
+            Niveau réussi !
+          </h2>
+
+          <p>Bravo, ton programme produit la bonne sortie.</p>
+        </div>
+      </header>
+
+      <div class="success-dialog-content">
+        <div class="success-stat">
+          <span class="success-stat-label">
+            Instructions utilisées
+          </span>
+
+          <strong class="success-stat-value">
+            {instructionCount()}
+          </strong>
+        </div>
+
+        <div class="success-stat">
+          <span class="success-stat-label">
+            Étapes exécutées
+          </span>
+
+          <strong class="success-stat-value">
+            {stepCount()}
+          </strong>
+        </div>
+      </div>
+
+      <footer class="success-dialog-footer">
+        <button
+          class="success-action-button restart"
+          type="button"
+          onclick={restartLevel}
+        >
+          ↻ Recommencer
+        </button>
+
+        <button
+          class="success-action-button menu"
+          type="button"
+          onclick={handleQuitLevel}
+        >
+          🏠 Choisir un niveau
+        </button>
+      </footer>
+    </dialog>
+  </div>
+{/if}
 
 <style>
   .container {
@@ -738,4 +906,292 @@ h2 {
   --button-shadow: rgb(59 130 246 / 0.28);
 }
 
+.execution-error-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+
+  display: grid;
+  place-items: center;
+
+  background: rgb(15 23 42 / 0.55);
+  backdrop-filter: blur(3px);
+}
+
+.dialog {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);  
+  overflow: hidden;
+  animation: dialog-pop 160ms ease-out;
+}
+
+.execution-error-dialog {
+
+  width: min(520px, calc(100vw - 2rem));
+
+  border: 3px solid #ef4444;
+  border-radius: 22px;
+
+  background: linear-gradient(135deg, #fff1f2, #fee2e2);
+  color: #450a0a;
+
+  box-shadow:
+    0 20px 50px rgb(15 23 42 / 0.35),
+    inset 0 -5px 0 rgb(0 0 0 / 0.08);
+}
+
+.execution-error-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+
+  padding: 1rem 1.25rem;
+
+  background: linear-gradient(135deg, #fee2e2, #fca5a5);
+  border-bottom: 2px solid #ef4444;
+}
+
+.execution-error-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #7f1d1d;
+}
+
+.execution-error-close {
+  width: 2rem;
+  height: 2rem;
+
+  border: none;
+  border-radius: 999px;
+
+  background: rgb(255 255 255 / 0.65);
+  color: #7f1d1d;
+
+  font-size: 1.4rem;
+  font-weight: 900;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+.execution-error-close:hover {
+  background: white;
+}
+
+.execution-error-content {
+  padding: 1.25rem;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.execution-error-content p {
+  margin: 0;
+  font-weight: 700;
+}
+
+.execution-error-footer {
+  display: flex;
+  justify-content: flex-end;
+
+  padding: 1rem 1.25rem;
+  border-top: 1px solid rgb(239 68 68 / 0.25);
+}
+
+.execution-error-ok {
+  padding: 0.6rem 1rem;
+
+  border: 2px solid #ef4444;
+  border-radius: 999px;
+
+  background: linear-gradient(135deg, #fee2e2, #fca5a5);
+  color: #7f1d1d;
+
+  font-weight: 800;
+  cursor: pointer;
+
+  box-shadow:
+    inset 0 -3px 0 rgb(0 0 0 / 0.12),
+    0 4px 10px rgb(239 68 68 / 0.22);
+}
+
+.execution-error-ok:hover {
+  filter: brightness(1.03);
+}
+
+@keyframes dialog-pop {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-50%-0.5rem)) scale(0.92);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) translateY(0);
+  }
+}
+
+.success-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+
+  display: grid;
+  place-items: center;
+
+  background: rgb(15 23 42 / 0.55);
+  backdrop-filter: blur(3px);
+}
+
+.success-dialog {
+  width: min(560px, calc(100vw - 2rem));
+
+  border: 3px solid #22c55e;
+  border-radius: 24px;
+
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  color: #14532d;
+
+  box-shadow:
+    0 20px 50px rgb(15 23 42 / 0.35),
+    inset 0 -5px 0 rgb(0 0 0 / 0.08);
+}
+
+.success-dialog-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  padding: 1.25rem;
+
+  background: linear-gradient(135deg, #dcfce7, #86efac);
+  border-bottom: 2px solid #22c55e;
+}
+
+.success-icon {
+  width: 3rem;
+  height: 3rem;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 999px;
+  border: 3px solid #22c55e;
+
+  background: white;
+  color: #15803d;
+
+  font-size: 1.8rem;
+  font-weight: 900;
+
+  box-shadow:
+    inset 0 -3px 0 rgb(0 0 0 / 0.12),
+    0 4px 10px rgb(34 197 94 / 0.25);
+}
+
+.success-dialog-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #14532d;
+}
+
+.success-dialog-header p {
+  margin: 0.25rem 0 0;
+  color: #166534;
+  font-weight: 600;
+}
+
+.success-dialog-content {
+  padding: 1.25rem;
+
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.success-stat {
+  padding: 1rem;
+
+  border-radius: 18px;
+  border: 2px solid rgb(34 197 94 / 0.35);
+
+  background: rgb(255 255 255 / 0.75);
+
+  display: grid;
+  gap: 0.4rem;
+  justify-items: center;
+
+  box-shadow:
+    inset 0 -3px 0 rgb(0 0 0 / 0.06),
+    0 4px 10px rgb(15 23 42 / 0.08);
+}
+
+.success-stat-label {
+  font-size: 0.9rem;
+  color: #166534;
+  font-weight: 700;
+  text-align: center;
+}
+
+.success-stat-value {
+  font-size: 2rem;
+  line-height: 1;
+  color: #14532d;
+}
+
+.success-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+
+  padding: 1rem 1.25rem;
+  border-top: 1px solid rgb(34 197 94 / 0.25);
+}
+
+.success-action-button {
+  padding: 0.65rem 1rem;
+
+  border-radius: 999px;
+  border: 2px solid transparent;
+
+  font-weight: 900;
+  font-size: 1rem;
+  cursor: pointer;
+
+  box-shadow:
+    inset 0 -3px 0 rgb(0 0 0 / 0.12),
+    0 4px 10px rgb(15 23 42 / 0.14);
+
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    filter 120ms ease;
+}
+
+.success-action-button:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.03);
+  box-shadow:
+    inset 0 -3px 0 rgb(0 0 0 / 0.12),
+    0 8px 16px rgb(15 23 42 / 0.18);
+}
+
+.success-action-button:active {
+  transform: translateY(1px);
+}
+
+.success-action-button.restart {
+  border-color: #3b82f6;
+  background: linear-gradient(135deg, #dbeafe, #93c5fd);
+  color: #1e3a8a;
+}
+
+.success-action-button.menu {
+  border-color: #22c55e;
+  background: linear-gradient(135deg, #dcfce7, #86efac);
+  color: #14532d;
+}
 </style>

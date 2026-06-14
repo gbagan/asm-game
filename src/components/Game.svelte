@@ -1,6 +1,6 @@
 <script lang="ts">
   import { isPaletteBlock, isRegisterBlock, type DraggedBlock, type InstructionBlock,
-        type InstructionType, type PaletteBlock, type ProgramBlock } from "../lib/types";
+        type InstructionType, type LevelInfo, type PaletteBlock, type ProgramBlock } from "../lib/types";
   import Editor from "./Editor.svelte";
   import Execution from "./Execution.svelte";
   import RetroBackground from "./RetroBackground.svelte";
@@ -8,16 +8,19 @@
 
   type Props = {
     levelId: string;
+    levelInfo: LevelInfo;
+    saveInfo: (fn: (info: LevelInfo) => LevelInfo) => void;
+    onQuitLevel: () => void;
   }
 
-  let { levelId }: Props = $props();
+  let { levelId, levelInfo, saveInfo, onQuitLevel }: Props = $props();
 
-  let { palette, registers, objective } = $derived(LEVELS.find(lvl => lvl.id === levelId)!);
+  let { input, palette, registers, objective, expectedOutput } = $derived(LEVELS.find(lvl => lvl.id === levelId)!);
 
   let registerNames = $derived(registers.map((_, i) => 'R' + (i+1)));
 
-  let program = $state.raw<ProgramBlock[]>([]);
-  let showObjectiveDialog = $state(false);
+  let program = $derived(levelInfo.program);
+  let dialog = $state<"objective" | "help" | null>(null);
   let pc = $state(0);
 
   function createInstructionBlock(type: InstructionType): ProgramBlock {
@@ -115,11 +118,20 @@
   }
 
   function openObjectiveDialog() {
-    showObjectiveDialog = true;
+    dialog = "objective";
   }
 
-  function closeObjectiveDialog() {
-    showObjectiveDialog = false;
+  function openHelpDialog() {
+    dialog = "help";
+  }
+
+  function closeDialog() {
+    dialog = null;
+  }
+
+  function handleQuitLevel() {
+    saveInfo(info => ({...info, program}));
+    onQuitLevel();
   }
 
 </script>
@@ -129,10 +141,13 @@
   <div class="game">
     <Execution
       {program}
-      initialInput={[3, 4, 8, 12]}
+      initialInput={input}
       {registers}
       {registerNames}
+      {expectedOutput}
       {setProgramCounter}
+      {saveInfo}
+      {onQuitLevel}
     />
     <div>
       <div class="editor-topbar">
@@ -144,12 +159,16 @@
           🎯 Objectif
         </button>
         <button
+          class="button help-button"
+          type="button"
+          onclick={openHelpDialog}
+        >
+          ❔ Aide
+        </button>
+        <button
           class="button quit-level-button"
           type="button"
-          onclick={() => {
-            // TODO: quitter le niveau actuel
-            console.log("Quitter le niveau");
-          }}
+          onclick={handleQuitLevel}
         >
           🚪 Quitter
         </button>
@@ -168,14 +187,14 @@
   </div>
 </div>
 
-{#if showObjectiveDialog}
+{#if dialog === "objective"}
   <div
     class="dialog-backdrop"
     role="presentation"
-    onclick={closeObjectiveDialog}
+    onclick={closeDialog}
   >
     <dialog
-      class="objective-dialog"
+      class="dialog objective-dialog"
       open
       aria-labelledby="objective-title"
       onclick={(event) => event.stopPropagation()}
@@ -186,7 +205,7 @@
         <button
           class="dialog-close-button"
           type="button"
-          onclick={closeObjectiveDialog}
+          onclick={closeDialog}
           aria-label="Fermer"
         >
           ×
@@ -201,7 +220,88 @@
         <button
           class="dialog-ok-button"
           type="button"
-          onclick={closeObjectiveDialog}
+          onclick={closeDialog}
+        >
+          Compris !
+        </button>
+      </footer>
+    </dialog>
+  </div>
+{:else if dialog === "help"}
+  <div
+    class="dialog-backdrop"
+    role="presentation"
+    onclick={closeDialog}
+  >
+    <dialog
+      class="dialog help-dialog"
+      open
+      aria-labelledby="help-title"
+      onclick={(event) => event.stopPropagation()}
+    >
+      <header class="dialog-header help-header">
+        <h2 id="help-title">Aide : les instructions</h2>
+
+        <button
+          class="dialog-close-button"
+          type="button"
+          onclick={closeDialog}
+          aria-label="Fermer"
+        >
+          ×
+        </button>
+      </header>
+
+      <div class="help-content">
+        <section class="instruction-help io-help">
+          <h3>Input</h3>
+          <p>
+            Prend le premier nombre de l’input et le place dans la valeur courante.
+          </p>
+        </section>
+
+        <section class="instruction-help io-help">
+          <h3>Output</h3>
+          <p>
+            Envoie la valeur courante vers l’output.
+          </p>
+        </section>
+
+        <section class="instruction-help jump-help">
+          <h3>Jump</h3>
+          <p>
+            Saute directement vers la cible indiquée par la flèche.
+          </p>
+        </section>
+
+        <section class="instruction-help memory-help">
+          <h3>Copy From <span class="instruction-argument">i</span></h3>
+          <p>
+            Copie la valeur du registre <strong>i</strong> dans la valeur courante.
+          </p>
+        </section>
+
+        <section class="instruction-help memory-help">
+          <h3>Copy To <span class="instruction-argument">i</span></h3>
+          <p>
+            Copie la valeur courante dans le registre <strong>i</strong>.
+          </p>
+        </section>
+
+        <section class="instruction-help arithmetic-help">
+          <h3>Add <span class="instruction-argument">i</span></h3>
+          <p>
+            Additionne la valeur courante avec la valeur du registre <strong>i</strong>,
+            puis place le résultat dans la valeur courante.
+          </p>
+        </section>
+      </div>
+
+      <footer class="dialog-footer">
+        <button
+          class="dialog-ok-button"
+          type="button"
+          onclick={closeDialog}
         >
           Compris !
         </button>
@@ -212,6 +312,7 @@
 
 <style>
   .screen {
+    position: fixed;
     width: 100vw;
     height: 100vh;
     display: flex;
@@ -275,6 +376,31 @@
       0 2px 6px rgb(245 158 11 / 0.22);
   }
 
+  .help-button {
+    border: 2px solid #3b82f6;
+    background: linear-gradient(135deg, #dbeafe, #93c5fd);
+    color: #1e3a8a;
+
+    box-shadow:
+      inset 0 -3px 0 rgb(0 0 0 / 0.12),
+      0 4px 10px rgb(59 130 246 / 0.25);
+  }
+
+  .help-button:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.03);
+    box-shadow:
+      inset 0 -3px 0 rgb(0 0 0 / 0.12),
+      0 8px 16px rgb(59 130 246 / 0.28);
+  }
+
+  .help-button:active {
+    transform: translateY(1px);
+    box-shadow:
+      inset 0 -1px 0 rgb(0 0 0 / 0.16),
+      0 2px 6px rgb(59 130 246 / 0.22);
+  }
+
   .quit-level-button {
     border: 2px solid #64748b;
     background: linear-gradient(135deg, #f8fafc, #cbd5e1);
@@ -314,14 +440,11 @@
   }
 
   .objective-dialog {
-    width: min(520px, calc(100vw - 2rem));
+    width: 30rem;
     max-height: min(420px, calc(100vh - 2rem));
 
-    margin: 0;
-    padding: 0;
-
     border: 3px solid #f59e0b;
-    border-radius: 22px;
+    border-radius: 1.2rem;
 
     background: linear-gradient(135deg, #fff7ed, #fffbeb);
     color: #431407;
@@ -380,10 +503,6 @@
     line-height: 1.5;
   }
 
-  .dialog-content p {
-    margin: 0;
-  }
-
   .dialog-footer {
     display: flex;
     justify-content: flex-end;
@@ -424,4 +543,122 @@
       transform: scale(1) translateY(0);
     }
   }
+
+
+
+
+
+  .help-dialog {
+    width: 60rem;
+    max-height: 40rem;
+
+    border: 3px solid #3b82f6;
+    border-radius: 22px;
+
+    background: linear-gradient(135deg, #eff6ff, #f8fafc);
+    color: #0f172a;
+
+    box-shadow:
+      0 20px 50px rgb(15 23 42 / 0.35),
+      inset 0 -5px 0 rgb(0 0 0 / 0.08);
+
+    overflow: hidden;
+
+    animation: dialog-pop 160ms ease-out;
+  }
+
+  .help-header {
+    background: linear-gradient(135deg, #dbeafe, #93c5fd);
+    border-bottom-color: #3b82f6;
+  }
+
+  .help-header h2 {
+    color: #1e3a8a;
+  }
+
+  .help-content {
+    padding: 1.25rem;
+
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.85rem;
+
+    max-height: 420px;
+    overflow-y: auto;
+  }
+
+.instruction-help {
+  padding: 0.9rem 1rem;
+  border-radius: 16px;
+  border: 2px solid #cbd5e1;
+  background: white;
+
+  box-shadow:
+    inset 0 -3px 0 rgb(0 0 0 / 0.06),
+    0 4px 10px rgb(15 23 42 / 0.08);
+}
+
+.instruction-help h3 {
+  margin: 0 0 0.4rem;
+
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  font-size: 1.05rem;
+  font-weight: 900;
+}
+
+.instruction-help p {
+  margin: 0;
+  line-height: 1.45;
+  color: #334155;
+}
+
+.instruction-argument {
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 0.35rem;
+
+  display: inline-grid;
+  place-items: center;
+
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.75);
+  border: 2px solid rgb(0 0 0 / 0.12);
+
+  font-size: 0.85rem;
+  font-weight: 900;
+}
+
+/* mêmes couleurs que tes blocs */
+.io-help {
+  border-color: var(--io-border);
+  background: var(--io-bg);
+  color: var(--io-color);
+}
+
+.jump-help {
+  border-color: var(--jump-border);
+  background: var(--jump-bg);
+  color: var(--jump-color);
+}
+
+.memory-help {
+  border-color: #8b5cf6;
+  background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+  color: #3b0764;
+}
+
+.arithmetic-help {
+  border-color: #22c55e;
+  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+  color: #14532d;
+}
+
+@media (max-width: 700px) {
+  .help-content {
+    grid-template-columns: 1fr;
+  }
+}
 </style>

@@ -4,9 +4,17 @@
   --text: #6b6375;
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
 
+  --io-color: #78350f;
+  --io-bg: linear-gradient(135deg, #fef3c7, #fde68a);
+  --io-border: #f59e0b;
+
   --jump-color: #0c4a6e;
   --jump-bg: linear-gradient(135deg, #e0f2fe, #bae6fd);
   --jump-border: #38bdf8;
+
+  --mem-color: #3b0764;
+  --mem-bg: linear-gradient(135deg, #ede9fe, #ddd6fe);
+  --mem-color: #8b5cf6;
 
   font: min(2vh, calc(2vw * 10 / 16)) var(--sans);
   color: var(--text);

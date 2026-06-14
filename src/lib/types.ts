@@ -50,3 +50,8 @@ export type Level = {
   palette: InstructionType[];
   objective: string;
 }
+
+export type LevelInfo = {
+  completed: boolean;
+  program: ProgramBlock[];
+}
