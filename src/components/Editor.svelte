@@ -303,7 +303,7 @@
     color: #450a0a;
     border-color: #ef4444;
     background: #fecaca;
-    transform: scale(1.03);
+    transform: scale(1.05);
   }
 
   .editor-panel {
@@ -333,20 +333,9 @@
   }
 
   .between-drop-zone {
-    width: 260px;
-    height: 14px;
+    width: 12rem;
+    height: 1rem;
     border-radius: 999px;
-    transition:
-      height 120ms ease,
-      background 120ms ease,
-      border-color 120ms ease;
-  }
-
-  .between-drop-zone {
-    width: 260px;
-    height: 12px;
-    border-radius: 999px;
-    border: 2px solid transparent;
     transition:
       height 120ms ease,
       background 120ms ease,
@@ -354,27 +343,17 @@
   }
 
   .between-drop-zone:global(.drag-over) {
-    height: 42px;
+    height: 2.5rem;
     border-color: #3b82f6;
     border-style: dashed;
     background: rgb(255 255 255 / 0.85);
-  }
-
-  .end-drop-zone {
-    height: 2.5rem;
-    border: 2px dashed #bbb;
-    color: #888;
-    background: rgb(255 255 255 / 0.5);
-    display: grid;
-    place-items: center;
-    font-size: 0.85rem;
   }
 
   .empty-drop-zone {
     width: 12rem;
     height: 5rem;
     border: 2px dashed #aaa;
-    border-radius: 12px;
+    border-radius: 0.75rem;
     color: #666;
     background: white;
     display: grid;
@@ -382,7 +361,7 @@
   }
 
   .end-drop-zone {
-    width: 12.rem;
+    width: 12rem;
     height: 2.5rem;
     border: 2px dashed #bbb;
     border-radius: 10px;
@@ -391,6 +370,10 @@
     display: grid;
     place-items: center;
     font-size: 0.85rem;
+  }
+
+  .end-drop-zone:global(.drag-over) {
+    height: 3rem;
   }
 
   :global(.drop-before::before),

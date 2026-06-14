@@ -10,6 +10,15 @@ export const LEVELS: Level[] = [
     palette: ["input", "output" ],
     objective: "Place chaque élémént de l'INBOX dans l'OUTBOX."
   },
+  {  
+    id: "loop",
+    title: "Boucle",  
+    input: [10, 5, 8, -3, 6, 2, 9, 1],
+    registers: [],
+    expectedOutput: [10, 5, 8, -3, 6, 2, 9, 1],
+    palette: ["input", "output", "jump" ],
+    objective: "Place chaque élémént de l'INBOX dans l'OUTBOX. Essaie de le faire en utilisant 3 instructions."
+  },
   { 
     id: "permutations",
     title: "Permutations",
@@ -48,11 +57,38 @@ export const LEVELS: Level[] = [
   },
   {
     id: "zero-filter",
-    title: "Filtrage de zéros",
+    title: "Filtrage des zéros",
     registers: [null, null, null, null, null, null, null, null],
     input: [4, 0, 8, -3, 0, 0, 5, 0],
     expectedOutput: [4, 8, -3, 5],
     palette: ["input", "output", "copy-from", "copy-to", "add", "jump", "jump-if-zero" ],
-    objective: "Pour chaque élément de l'INBOX, place le dans l'OUTBOX seulement si il est différent de ZERO."
+    objective: "Pour chaque élément de l'INBOX, place le dans l'OUTBOX si il est différent de ZERO."
+  },
+  {
+    id: "nonzero-filter",
+    title: "Filtrage des non-zéros",
+    registers: [null, null, null, null, null, null, null, null],
+    input: [4, 0, 8, -3, 0, 0, 5, 0],
+    expectedOutput: [0, 0, 0, 0],
+    palette: ["input", "output", "copy-from", "copy-to", "add", "jump", "jump-if-zero" ],
+    objective: "Pour chaque ZERO de l'INBOX, place le dans l'OUTBOX."
+  },
+  {
+    id: "subtract",
+    title: "Soustraction",
+    registers: [null, null, null, null, null, null, null, null],
+    input: [5, 4, 8, -3, 2, 7, 6, 2],
+    expectedOutput: [1, -1, 11, -11, -5, 5, 4, -4],
+    palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "jump", "jump-if-zero" ],
+    objective: "Pour chaque paire d'éléments de l'INBOX, envoie dans l'OUTBOX le premier auquel est soustrait le second puis le second auquel est soustrait le premier",
+  },
+  {
+    id: "equality",
+    title: "Egalité",
+    registers: [null, null, null, null],
+    input: [5, 4, 6, 6, 2, 7, -9, 9, 4, 4],
+    expectedOutput: [6, 4],
+    palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "jump", "jump-if-zero" ],
+    objective: "Pour chaque paire d'éléments de l'INBOX, envoie dans l'OUTBOX un de ces éléments si ils sont égaux et rejette les deux sinon."
   }
 ]

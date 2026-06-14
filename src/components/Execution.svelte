@@ -2,6 +2,8 @@
   import { count, filterMap, sleep } from "@gbagan/utils";
   import { tick } from "svelte";
   import type { LevelInfo, ProgramBlock } from "../lib/types";
+  import { playFailureSound, playStepSound, playVictorySound } from "../lib/sound";
+    import { fade } from "svelte/transition";
 
   type TokenLocation =
     | { kind: "input"; index: number }
@@ -51,11 +53,10 @@
 
   let running: "stopped" | "running" | "pending" = $state("stopped");
 
-  let tokens: NumberToken[] = $derived.by(() => {
-    layoutVersion;
+  let initialTokens: NumberToken[] = $derived.by(() => {
     return [
       ...initialInput.map((value, index) => ({
-        id: crypto.randomUUID(),
+        id: "i"+index,
         value,
         location: { kind: "input", index }
       })) as NumberToken[],
@@ -63,12 +64,18 @@
         value === null 
         ? null 
         : {
-          id: crypto.randomUUID(),
+          id: "r"+index,
           value,
           location: { kind: "register", index}
         }
       ) as NumberToken[]
     ]
+  });
+
+  let tokens: NumberToken[] = $derived.by(() => {
+    layoutVersion;
+    program;
+    return initialTokens;
   });
 
   let pc = $derived.by(() => {
@@ -85,7 +92,6 @@
     return 0;
   });
 
-
   let executionErrorMessage = $state<string | null>(null);
   let successDialog = $state(false);
 
@@ -99,6 +105,10 @@
 
   function visibleTokens() {
     return tokens.filter((token) => token.location.kind !== "hidden");
+  }
+
+  function safeVisibleTokens() {
+    return visibleTokens().filter(token => tokenPositions[token.id])
   }
 
   function inputTokens() {
@@ -260,6 +270,46 @@
     await moveToken(copyId, to);
   }
 
+  async function executeOperation(name: string, registerId: number, op: (a: number, b: number) => number) {
+    const current = currentToken();
+    const register = registerToken(registerId);
+
+    if (!current) throw new Error(`Tente de faire une ${name} alors que la valeur courante est vide`);
+    if (!register) throw new Error(`Tente de faire une ${name} avec un registre vide`);
+
+    showCalcArea = true;
+    await tick();
+    await updateTokenPositions();
+
+    playStepSound();
+
+    const registerCopyId = await createTokenAt(
+      register.value,
+      { kind: "register", index: registerId }
+    );
+
+    await Promise.all([
+      moveToken(current.id, { kind: "calc", side: "left" }),
+      moveToken(registerCopyId, { kind: "calc", side: "right" })
+    ]);
+
+    playStepSound();
+    hideTokens([current.id, registerCopyId]);
+    const result = op(current.value, register.value);
+
+    const resultId = await createTokenAt(
+      result,
+      { kind: "calc", side: "result" }
+    );
+
+    await sleep(400);
+    hideTokenAt("current");
+    await moveToken(resultId, { kind: "current" });
+    await sleep(250);
+    showCalcArea = false;
+    pc += 1;
+  }
+
   async function executeInstruction(instruction: ProgramBlock) {
     if (instruction.kind === "jump-target") {
       pc += 1;
@@ -272,8 +322,9 @@
       }
 
       hideTokenAt("current");
+      playStepSound();
       await moveToken(firstInputToken.id, { kind: "current" });
-      await sleep(250);
+      await sleep(400);
       pc += 1;
     } else if (instruction.type === "output") {
       const token = currentToken();
@@ -282,18 +333,18 @@
       }
 
       pushOutputTokensDown(token.id);
+      playStepSound();
       await moveToken(token.id, {
         kind: "output",
         index: 0
       });
-      await sleep(250);
+      await sleep(400);
       let output = outputTokens();
       const actual = output[0].value;
       const expected = expectedOutput[output.length - 1];
       if (actual !== expected) {
         throw new Error(`La valeur ${actual} n'était pas attendue dans l'Output`);
       }
-
 
       pc += 1;
     } else if (instruction.type === "copy-to") {
@@ -302,7 +353,7 @@
         throw new Error("Tente de copier la valeur courante alors qu'elle est vide");
       }
       hideTokenAt("register", instruction.register);
-
+      playStepSound();
       await createCopyAndMove(
         token.value,
         { kind: "current" },
@@ -317,7 +368,7 @@
       }
 
       hideTokenAt("current");
-
+      playStepSound();
       await createCopyAndMove(
         token.value,
         { kind: "register", index: instruction.register! },
@@ -326,53 +377,18 @@
       await sleep(250);
       pc += 1;
     } else if (instruction.type === "add") {
-      const current = currentToken();
-      const register = registerToken(instruction.register!);
-
-      if (!current) throw new Error("Tente de faire une addition alors que la valeur courante est vide");
-      if (!register) throw new Error("Tente de faire une addition avec un registre vide");
-
-      showCalcArea = true;
-      await tick();
-      await updateTokenPositions();
-
-      const currentCopyId = await createTokenAt(
-        current.value,
-        { kind: "current" }
-      );
-
-      const registerCopyId = await createTokenAt(
-        register.value,
-        { kind: "register", index: instruction.register! }
-      );
-
-      await Promise.all([
-        moveToken(currentCopyId, { kind: "calc", side: "left" }),
-        moveToken(registerCopyId, { kind: "calc", side: "right" })
-      ]);
-
-      await sleep(250);
-      hideTokens([currentCopyId, registerCopyId]);
-      const result = current.value + register.value;
-
-      const resultId = await createTokenAt(
-        result,
-        { kind: "calc", side: "result" }
-      );
-
-      await sleep(250);
-      hideTokenAt("current");
-      await moveToken(resultId, { kind: "current" });
-      await sleep(250);
-      showCalcArea = false;
-      pc += 1;
+      await executeOperation("addition", instruction.register!, (a, b) => a + b);
+    } else if (instruction.type === "sub") {
+      await executeOperation("soustraction", instruction.register!, (a, b) => a - b);
     } else if (instruction.type === "jump") {
+      playStepSound();
       pc = program.findIndex(b => b.id === instruction.targetId);
     } else if (instruction.type === "jump-if-zero") {
       const token = currentToken();
       if (!token) {
         throw new Error("Effectue un Jump If Zero alors que la valeur courante est vide")
       }
+      playStepSound();
       if (token.value === 0) {
         pc = program.findIndex(b => b.id === instruction.targetId);
       } else {
@@ -422,15 +438,21 @@
 
   async function step() {
     try {
+      if (pc >= program.length) {
+        throw new Error("Le programme s'est terminé avant d'avoir terminé sa tache");
+      }
       await executeInstruction(program[pc]);
     } catch (e) {
+      playFailureSound();
       executionErrorMessage = (e as Error).message;
+      running = "stopped";
       return false;
     }
     setProgramCounter(pc);
     stepCount += 1;
     if (isSuccess()) {
       completeLevel();
+      playVictorySound();
       successDialog = true; // todo
       running = "stopped";
       return false;
@@ -446,11 +468,21 @@
     setProgramCounter(0);
     running = "running";
 
-    while (pc < program.length && running === "running") {
+    while (running === "running") {
       const cont = await step();
       if (!cont) return;
       await sleep(300);
     }
+  }
+
+  async function stop() {
+    if (running === "running") {
+      running = "pending";
+    }
+    while (running === "pending") {
+      await sleep(100);
+    }
+    layoutVersion += 1;
   }
 
   function completeLevel() {
@@ -531,22 +563,21 @@
       </div>
     </section>
 
-    {#each visibleTokens() as token (token.id)}
-      {#if tokenPositions[token.id]}
+    {#each safeVisibleTokens() as token (token.id)}
         <div
+          transition:fade
           class="number-token"
           style:left="{tokenPositions[token.id].x}px"
           style:top="{tokenPositions[token.id].y}px"
         >
           {token.value}
         </div>
-      {/if}
     {/each}
   </div>
   <div class="controls">
     <button class="button start" disabled={running !== "stopped"} onclick={run}>Lancer</button>
     <button class="button pause" disabled={running === "stopped"} onclick={() => running = "pending"}>Pause</button>
-    <button class="button fast">Accélérer</button>
+    <button class="button fast" disabled={running === "pending"} onclick={stop}>Arrêter</button>
     <button class="button step" disabled={running !== "stopped"} onclick={step}>Pas à pas</button>
   </div>
 </div>
@@ -705,6 +736,7 @@ h2 {
 
 .center-panel {
   width: 25rem;
+  height: 42rem;
   display: grid;
   grid-template-rows: auto 7.5rem 1fr auto;
   gap: 1rem;

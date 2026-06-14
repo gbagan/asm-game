@@ -16,6 +16,11 @@
   --mem-bg: linear-gradient(135deg, #ede9fe, #ddd6fe);
   --mem-color: #8b5cf6;
 
+  --arith-color: #14532d;
+  --arith-bg: linear-gradient(135deg, #dcfce7, #bbf7d0);
+  --arith-border: #22c55e;
+
+
   font: min(2vh, calc(2vw * 10 / 16)) var(--sans);
   color: var(--text);
   -webkit-font-smoothing: antialiased;

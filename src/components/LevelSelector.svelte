@@ -100,13 +100,13 @@
         <div class="record-preview">
           <span class="record-icon">🏆 📜</span>
           <span class="record-label">Instructions</span>
-          <strong>{levelInfos[selectedLevel.id].instructionCount && "—"}</strong>
+          <strong>{levelInfos[selectedLevel.id].instructionCount || "—"}</strong>
         </div>
 
         <div class="record-preview">
           <span class="record-icon">🏆 ⏱</span>
          <span class="record-label">Étapes</span>
-         <strong>{levelInfos[selectedLevel.id].stepCount && "—"}</strong>
+         <strong>{levelInfos[selectedLevel.id].stepCount || "—"}</strong>
         </div>
       </div>
     </div>
@@ -131,12 +131,11 @@
   }
 
 .level-selector {
-  width: 60rem;
+  width: 75rem;
   margin: 0 auto;
   padding: 1.5rem;
 
-  display: grid;
-  grid-template-columns: 260px minmax(0, 1fr);
+  display: flex;
   gap: 1.25rem;
 
   box-sizing: border-box;
@@ -174,11 +173,12 @@
 
 .level-buttons {
   display: grid;
+  grid-template-columns: 1fr;
   gap: 0.6rem;
 }
 
 .level-button {
-  width: 100%;
+  width: 10rem;
   padding: 0.75rem 0.85rem;
 
   display: grid;
@@ -204,7 +204,7 @@
 }
 
 .level-button:hover {
-    filter: brightness(1.02);
+  filter: brightness(1.02);
   transform: translateY(-2px);
   box-shadow:
     inset 0 -3px 0 rgb(0 0 0 / 0.08),
@@ -266,36 +266,9 @@
   height: 7rem;
 }
 
-.preview-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-
-  margin-left: 0.5rem;
-  padding: 0.25rem 0.55rem;
-
-  border-radius: 999px;
-
-  font-size: 0.8rem;
-  font-weight: 900;
-  vertical-align: middle;
-}
-
-.preview-status.completed {
-  border: 2px solid #22c55e;
-  background: #dcfce7;
-  color: #14532d;
-}
-
-.preview-status.not-completed {
-  border: 2px solid #94a3b8;
-  background: #f1f5f9;
-  color: #475569;
-}
-
 .level-preview {
+  width: 45rem;
   padding: 1.25rem;
-  min-width: 0;
 }
 
 .preview-header {

@@ -9,7 +9,8 @@
     "jump-if-negative": "jump if < 0",
     "copy-from": "copy from",
     "copy-to": "copy to",
-    "add": "add"
+    "add": "add",
+    "sub": "sub"
   }
 
   type Props = {
@@ -137,20 +138,19 @@
     color: var(--jump-color);
   }
 
+  .program-block[data-type="add"],
+  .palette-block[data-type="add"],
   .program-block[data-type="sub"],
-  .program-block[data-type="mul"],
-  .program-block[data-type="div"] {
-    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
-    border-color: #22c55e;
-    color: #14532d;
+  .palette-block[data-type="sub"] {
+    background: var(--arith-bg);
+    border-color: var(--arith-border);
+    color: var(--arith-color);
   }
 
   .program-block[data-type="copy-from"],
   .palette-block[data-type="copy-from"],
   .program-block[data-type="copy-to"],
-  .palette-block[data-type="copy-to"],
-  .program-block[data-type="add"],
-  .palette-block[data-type="add"] {
+  .palette-block[data-type="copy-to"] {
     background: var(--mem-bg);
     border-color: var(--mem-border);
     color: var(--mem-color);

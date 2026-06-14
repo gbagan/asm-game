@@ -317,6 +317,13 @@
             puis place le résultat dans la valeur courante.
           </p>
         </section>
+        <section class="instruction-help arithmetic-help">
+          <h3>Sub <span class="instruction-argument">i</span></h3>
+          <p>
+            Soustrait la valeur du registre <strong>i</strong> à la valeur courante,
+            puis place le résultat dans la valeur courante.
+          </p>
+        </section>
       </div>
 
       <footer class="dialog-footer">
@@ -572,7 +579,7 @@
   }
 
   .help-dialog {
-    width: 60rem;
+    width: 75rem;
     height: 45rem;
 
     border: 3px solid #3b82f6;
@@ -603,7 +610,7 @@
     padding: 1.25rem;
 
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0.85rem;
 
     overflow-y: auto;
@@ -680,28 +687,27 @@
     font-weight: 900;
   }
 
-/* mêmes couleurs que tes blocs */
-.io-help {
-  border-color: var(--io-border);
-  background: var(--io-bg);
-  color: var(--io-color);
-}
+  .io-help {
+    border-color: var(--io-border);
+    background: var(--io-bg);
+    color: var(--io-color);
+  }
 
-.jump-help {
-  border-color: var(--jump-border);
-  background: var(--jump-bg);
-  color: var(--jump-color);
-}
+  .jump-help {
+    border-color: var(--jump-border);
+    background: var(--jump-bg);
+    color: var(--jump-color);
+  }
 
-.memory-help {
-  border-color: #8b5cf6;
-  background: linear-gradient(135deg, #ede9fe, #ddd6fe);
-  color: #3b0764;
-}
+  .memory-help {
+    border-color: #8b5cf6;
+    background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+    color: #3b0764;
+  }
 
-.arithmetic-help {
-  border-color: #22c55e;
-  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
-  color: #14532d;
-}
+  .arithmetic-help {
+    border-color: var(--arith-border);
+    background: var(--arith-bg);
+    color: var(--arith-color);
+  }
 </style>
