@@ -19,7 +19,7 @@
       const info = JSON.parse(data);
       infos[level.id] = info;
     } else {
-      infos[level.id] = { completed: false, program: [] };
+      infos[level.id] = { completed: false, program: [], instructionCount: 0, stepCount: 0 };
     }
   }
 
@@ -27,7 +27,9 @@
 
   function saveInfo(fn: (info: LevelInfo) => LevelInfo) {
     if (levelId !== null) {
-      levelInfos = {...levelInfos, [levelId]: fn(levelInfos[levelId]) }
+      const info = fn(levelInfos[levelId]);
+      localStorage.setItem(`coding-game--${levelId}`, JSON.stringify(info));
+      levelInfos = {...levelInfos, [levelId]: info }
     }
   }
 

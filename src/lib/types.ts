@@ -54,4 +54,6 @@ export type Level = {
 export type LevelInfo = {
   completed: boolean;
   program: ProgramBlock[];
+  instructionCount: number;
+  stepCount: number;
 }

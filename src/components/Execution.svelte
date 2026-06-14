@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { filterMap, sleep } from "@gbagan/utils";
+  import { count, filterMap, sleep } from "@gbagan/utils";
   import { tick } from "svelte";
   import type { LevelInfo, ProgramBlock } from "../lib/types";
 
@@ -74,10 +74,20 @@
     initialInput;
     layoutVersion;
     return 0
-  })
+  });
+
+  let stepCount = $derived.by(() => {
+    program;
+    initialInput;
+    layoutVersion;
+    return 0;
+  });
+
 
   let executionErrorMessage = $state<string | null>(null);
   let successDialog = $state(false);
+
+  let instructionCount = $derived(count(program, b => b.kind === "instruction"));
 
   function closeExecutionErrorDialog() {
     executionErrorMessage = null;
@@ -251,6 +261,8 @@
   async function executeInstruction(instruction: ProgramBlock) {
     if (instruction.kind === "jump-target") {
       pc += 1;
+      // ne compte pas comme une étape, pour compenser l'incrément
+      stepCount -= 1;
     } else if (instruction.type === "input") {
       const firstInputToken = inputTokens()[0];
       if (!firstInputToken) {
@@ -405,9 +417,10 @@
         executionErrorMessage = (e as Error).message;
         return
       }
-
       setProgramCounter(pc);
+      stepCount += 1;
       if (isSuccess()) {
+        completeLevel();
         successDialog = true; // todo
       }
 
@@ -415,25 +428,24 @@
     }
   }
 
-  function restartLevel() {
-    saveInfo(info => ({...info, completed: true, program}));
+  function completeLevel() {
+    saveInfo(info => {
+      const ic = 
+        info.instructionCount === 0 
+        ? instructionCount 
+        : Math.min(info.instructionCount, instructionCount);
+      const sc = 
+        info.stepCount === 0 
+        ? stepCount
+        : Math.min(info.stepCount, stepCount);
+      return {...info, completed: true, program, instructionCount: ic, stepCount: sc};
+    });
+  }
+
+  function restartLevel() { 
     successDialog = false;
     layoutVersion += 1;
   }
-
-  function instructionCount() {
-    return 1000;
-  }
-
-  function stepCount() {
-    return 1000;
-  }
-
-  function handleQuitLevel() {
-    saveInfo(info => ({...info, completed: true, program}));
-    onQuitLevel();
-  }
-
 </script>
 
 <div class="container">
@@ -584,7 +596,7 @@
           </span>
 
           <strong class="success-stat-value">
-            {instructionCount()}
+            {instructionCount}
           </strong>
         </div>
 
@@ -594,7 +606,7 @@
           </span>
 
           <strong class="success-stat-value">
-            {stepCount()}
+            {stepCount}
           </strong>
         </div>
       </div>
@@ -611,7 +623,7 @@
         <button
           class="success-action-button menu"
           type="button"
-          onclick={handleQuitLevel}
+          onclick={onQuitLevel}
         >
           🏠 Choisir un niveau
         </button>

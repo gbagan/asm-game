@@ -334,6 +334,7 @@
     display: flex;
     justify-content: flex-end;
     align-items: center;
+    gap: 1rem;
     margin-bottom: 0.75rem;
   }
 
@@ -425,8 +426,6 @@
       0 2px 6px rgb(100 116 139 / 0.22);
   }
 
-
-
   .dialog-backdrop {
     position: fixed;
     inset: 0;
@@ -437,6 +436,15 @@
 
     background: rgb(15 23 42 / 0.55);
     backdrop-filter: blur(3px);
+  }
+
+  .dialog {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);  
+    overflow: hidden;
+    animation: dialog-pop 160ms ease-out;
   }
 
   .objective-dialog {
@@ -454,8 +462,6 @@
       inset 0 -5px 0 rgb(0 0 0 / 0.08);
 
     overflow: hidden;
-
-    animation: dialog-pop 160ms ease-out;
   }
 
   .dialog-header {
@@ -512,6 +518,7 @@
   }
 
   .dialog-ok-button {
+    font-size: 1rem;
     padding: 0.6rem 1rem;
 
     border: 2px solid #22c55e;
@@ -535,18 +542,14 @@
   @keyframes dialog-pop {
     from {
       opacity: 0;
-      transform: scale(0.92) translateY(8px);
+      transform: translate(-50%, calc(-50%-0.5rem)) scale(0.92);
     }
 
     to {
       opacity: 1;
-      transform: scale(1) translateY(0);
+      transform: translate(-50%, -50%) translateY(0);
     }
   }
-
-
-
-
 
   .help-dialog {
     width: 60rem;
