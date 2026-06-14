@@ -94,6 +94,22 @@
           {/each}
         </div>
       </div>
+          <div class="preview-card records-card">
+      <h3>Records</h3>
+      <div class="record-preview-grid">
+        <div class="record-preview">
+          <span class="record-icon">🏆 📜</span>
+          <span class="record-label">Instructions</span>
+          <strong>{levelInfos[selectedLevel.id].instructionCount && "—"}</strong>
+        </div>
+
+        <div class="record-preview">
+          <span class="record-icon">🏆 ⏱</span>
+         <span class="record-label">Étapes</span>
+         <strong>{levelInfos[selectedLevel.id].stepCount && "—"}</strong>
+        </div>
+      </div>
+    </div>
     </section>
   {:else}
     <section class="level-preview empty-preview">
@@ -188,8 +204,8 @@
 }
 
 .level-button:hover {
+    filter: brightness(1.02);
   transform: translateY(-2px);
-  filter: brightness(1.02);
   box-shadow:
     inset 0 -3px 0 rgb(0 0 0 / 0.08),
     0 8px 18px rgb(15 23 42 / 0.12);
@@ -360,5 +376,44 @@
   place-items: center;
   color: #64748b;
   font-weight: 800;
+}
+
+.record-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.record-preview {
+  padding: 0.85rem;
+
+  border-radius: 16px;
+  border: 2px solid #cbd5e1;
+
+  background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+
+  display: grid;
+  justify-items: center;
+  gap: 0.25rem;
+
+  box-shadow:
+    inset 0 -3px 0 rgb(0 0 0 / 0.06),
+    0 4px 10px rgb(15 23 42 / 0.08);
+}
+
+.record-icon {
+  font-size: 1.4rem;
+}
+
+.record-label {
+  font-size: 0.8rem;
+  color: #475569;
+  font-weight: 800;
+}
+
+.record-preview strong {
+  font-size: 1.8rem;
+  line-height: 1;
+  color: #1e293b;
 }
 </style>
