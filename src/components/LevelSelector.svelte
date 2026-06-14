@@ -6,19 +6,15 @@
   type Props = {
     levels: Level[];
     levelInfos: Record<string, LevelInfo>
-    onSelectLevel?: (level: Level) => void;
+    onSelectLevel: (level: Level) => void;
   };
 
-  let {
-    levels,
-    levelInfos,
-    onSelectLevel = () => {}
-  }: Props = $props();
+  let { levels, levelInfos, onSelectLevel }: Props = $props();
 
-  let selectedLevelId: string | null = $derived(levels[0]?.id ?? null);
+  let selectedLevelId: string | null = $derived(levels[0].id);
 
   let selectedLevel = $derived(
-    levels.find((level) => level.id === selectedLevelId) ?? levels[0]
+    levels.find(level => level.id === selectedLevelId)!
   );
 
   function selectLevel(level: Level) {
@@ -26,43 +22,41 @@
   }
 
   function startSelectedLevel() {
-    if (!selectedLevel) return;
     onSelectLevel(selectedLevel);
   }
 </script>
 
 <div class="screen">
-<LevelBackground />
-<div class="level-selector">
-  <aside class="level-list">
-    <h2>Choisir un niveau</h2>
+  <LevelBackground />
+  <div class="level-selector">
+    <aside class="level-list">
+      <h2>Choisir un niveau</h2>
 
-    <div class="level-buttons">
-      {#each levels as level}
-        <button
-          type="button"
-          class="level-button"
-          class:selected={level.id === selectedLevelId}
-          onclick={() => selectLevel(level)}
-        >
-          <span class="level-title-row">
-            <span class="level-title">{level.title}</span>
-            {#if levelInfos[level.id].completed}
-              <span class="level-status completed" title="Niveau terminé">
-                ✓
-              </span>
-            {:else}
-              <span class="level-status not-completed" title="Niveau non terminé">
-                ○
-              </span>
-            {/if}
-          </span>
-        </button>
-      {/each}
-    </div>
-  </aside>
+      <div class="level-buttons">
+        {#each levels as level}
+          <button
+            type="button"
+            class="level-button"
+            class:selected={level.id === selectedLevelId}
+            onclick={() => selectLevel(level)}
+          >
+            <span class="level-title-row">
+              <span class="level-title">{level.title}</span>
+              {#if levelInfos[level.id].completed}
+                <span class="level-status completed" title="Niveau terminé">
+                  ✓
+                </span>
+              {:else}
+                <span class="level-status not-completed" title="Niveau non terminé">
+                  ○
+                </span>
+              {/if}
+            </span>
+          </button>
+        {/each}
+      </div>
+    </aside>
 
-  {#if selectedLevel}
     <section class="level-preview">
       <header class="preview-header">
         <div>
@@ -94,29 +88,24 @@
           {/each}
         </div>
       </div>
-          <div class="preview-card records-card">
-      <h3>Records</h3>
-      <div class="record-preview-grid">
-        <div class="record-preview">
-          <span class="record-icon">🏆 📜</span>
-          <span class="record-label">Instructions</span>
-          <strong>{levelInfos[selectedLevel.id].instructionCount || "—"}</strong>
-        </div>
+      <div class="preview-card records-card">
+        <h3>Records</h3>
+        <div class="record-preview-grid">
+          <div class="record-preview">
+            <span class="record-icon">🏆 📜</span>
+            <span class="record-label">Instructions</span>
+            <strong>{levelInfos[selectedLevel.id].instructionCount || "—"}</strong>
+          </div>
 
-        <div class="record-preview">
-          <span class="record-icon">🏆 ⏱</span>
-         <span class="record-label">Étapes</span>
-         <strong>{levelInfos[selectedLevel.id].stepCount || "—"}</strong>
+          <div class="record-preview">
+            <span class="record-icon">🏆 ⏱</span>
+            <span class="record-label">Étapes</span>
+            <strong>{levelInfos[selectedLevel.id].stepCount || "—"}</strong>
+          </div>
         </div>
       </div>
-    </div>
     </section>
-  {:else}
-    <section class="level-preview empty-preview">
-      Aucun niveau disponible.
-    </section>
-  {/if}
-</div>
+  </div>
 </div>
 
 <style>
@@ -276,7 +265,6 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-
   margin-bottom: 1rem;
 }
 
@@ -334,7 +322,6 @@
 }
 
 .objective-card p {
-  margin: 0;
   line-height: 1.5;
   color: #334155;
 }
@@ -342,13 +329,6 @@
 .preview-card {
   padding: 1rem;
   min-width: 0;
-}
-
-.empty-preview {
-  display: grid;
-  place-items: center;
-  color: #64748b;
-  font-weight: 800;
 }
 
 .record-preview-grid {

@@ -3,7 +3,8 @@
   import { tick } from "svelte";
   import type { LevelInfo, ProgramBlock } from "../lib/types";
   import { playFailureSound, playStepSound, playVictorySound } from "../lib/sound";
-    import { fade } from "svelte/transition";
+  import { fade } from "svelte/transition";
+  import Button from "./Button.svelte";
 
   type TokenLocation =
     | { kind: "input"; index: number }
@@ -575,10 +576,10 @@
     {/each}
   </div>
   <div class="controls">
-    <button class="button start" disabled={running !== "stopped"} onclick={run}>Lancer</button>
-    <button class="button pause" disabled={running === "stopped"} onclick={() => running = "pending"}>Pause</button>
-    <button class="button fast" disabled={running === "pending"} onclick={stop}>Arrêter</button>
-    <button class="button step" disabled={running !== "stopped"} onclick={step}>Pas à pas</button>
+    <Button variant="green" disabled={running !== "stopped"} onclick={run}>Lancer</Button>
+    <Button variant="yellow" disabled={running === "stopped"} onclick={() => running = "pending"}>Pause</Button>
+    <Button variant="red" disabled={running === "pending"} onclick={stop}>Arrêter</Button>
+    <Button variant="blue" disabled={running !== "stopped"} onclick={step}>Pas à pas</Button>
   </div>
 </div>
 {#if executionErrorMessage !== null}
@@ -669,21 +670,12 @@
       </div>
 
       <footer class="success-dialog-footer">
-        <button
-          class="success-action-button restart"
-          type="button"
-          onclick={restartLevel}
-        >
+        <Button variant="blue" onclick={restartLevel}>
           ↻ Recommencer
-        </button>
-
-        <button
-          class="success-action-button menu"
-          type="button"
-          onclick={onQuitLevel}
-        >
+        </Button>
+        <Button variant="green" onclick={onQuitLevel}>
           🏠 Choisir un niveau
-        </button>
+        </Button>
       </footer>
     </dialog>
   </div>
@@ -886,96 +878,6 @@ h2 {
     flex-wrap: wrap;
   }
 
-.button {
-  --button-bg: #e2e8f0;
-  --button-bg-2: #cbd5e1;
-  --button-border: #94a3b8;
-  --button-text: #0f172a;
-  --button-shadow: rgb(15 23 42 / 0.18);
-
-  min-width: 8rem;
-  padding: 0.75rem 1.15rem;
-
-  border: 2px solid var(--button-border);
-  border-radius: 999px;
-
-  background: linear-gradient(135deg, var(--button-bg), var(--button-bg-2));
-  color: var(--button-text);
-
-  font-size: 1rem;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-
-  cursor: pointer;
-  user-select: none;
-
-  box-shadow:
-    inset 0 -4px 0 rgb(0 0 0 / 0.12),
-    0 6px 14px var(--button-shadow);
-
-  transition:
-    transform 120ms ease,
-    box-shadow 120ms ease,
-    filter 120ms ease;
-}
-
-.button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  filter: brightness(1.04);
-  box-shadow:
-    inset 0 -4px 0 rgb(0 0 0 / 0.12),
-    0 10px 20px var(--button-shadow);
-}
-
-.button:active:not(:disabled) {
-  transform: translateY(1px);
-  box-shadow:
-    inset 0 -2px 0 rgb(0 0 0 / 0.16),
-    0 3px 8px var(--button-shadow);
-}
-
-.button:disabled {
-  opacity: 0.45;
-  cursor: default;
-  filter: grayscale(0.25);
-}
-
-  /* Bouton lancer */
-  .button.start {
-    --button-bg: #dcfce7;
-    --button-bg-2: #86efac;
-    --button-border: #22c55e;
-    --button-text: #14532d;
-    --button-shadow: rgb(34 197 94 / 0.28);
-  }
-
-/* Bouton pause */
-.button.pause {
-  --button-bg: #fef3c7;
-  --button-bg-2: #fcd34d;
-  --button-border: #f59e0b;
-  --button-text: #78350f;
-  --button-shadow: rgb(245 158 11 / 0.28);
-}
-
-/* Bouton arrêter */
-.button.fast {
-  --button-bg: #fee2e2;
-  --button-bg-2: #fca5a5;
-  --button-border: #ef4444;
-  --button-text: #7f1d1d;
-  --button-shadow: rgb(239 68 68 / 0.28);
-}
-
-/* Bouton étape suivante */
-.button.step {
-  --button-bg: #dbeafe;
-  --button-bg-2: #93c5fd;
-  --button-border: #3b82f6;
-  --button-text: #1e3a8a;
-  --button-shadow: rgb(59 130 246 / 0.28);
-}
-
 .execution-error-backdrop {
   position: fixed;
   inset: 0;
@@ -1116,7 +1018,7 @@ h2 {
 }
 
 .success-dialog {
-  width: min(560px, calc(100vw - 2rem));
+  width: 28rem;
 
   border: 3px solid #22c55e;
   border-radius: 24px;
@@ -1219,49 +1121,5 @@ h2 {
 
   padding: 1rem 1.25rem;
   border-top: 1px solid rgb(34 197 94 / 0.25);
-}
-
-.success-action-button {
-  padding: 0.65rem 1rem;
-
-  border-radius: 999px;
-  border: 2px solid transparent;
-
-  font-weight: 900;
-  font-size: 1rem;
-  cursor: pointer;
-
-  box-shadow:
-    inset 0 -3px 0 rgb(0 0 0 / 0.12),
-    0 4px 10px rgb(15 23 42 / 0.14);
-
-  transition:
-    transform 120ms ease,
-    box-shadow 120ms ease,
-    filter 120ms ease;
-}
-
-.success-action-button:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.03);
-  box-shadow:
-    inset 0 -3px 0 rgb(0 0 0 / 0.12),
-    0 8px 16px rgb(15 23 42 / 0.18);
-}
-
-.success-action-button:active {
-  transform: translateY(1px);
-}
-
-.success-action-button.restart {
-  border-color: #3b82f6;
-  background: linear-gradient(135deg, #dbeafe, #93c5fd);
-  color: #1e3a8a;
-}
-
-.success-action-button.menu {
-  border-color: #22c55e;
-  background: linear-gradient(135deg, #dcfce7, #86efac);
-  color: #14532d;
 }
 </style>

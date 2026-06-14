@@ -11,8 +11,6 @@
     type DraggedBlock,
     type InstructionType,
     isPaletteBlock,
-    type LevelInfo
-
   } from "../lib/types";
   import ExecutionPointer from "./ExecutionPointer.svelte";
   import { tick } from "svelte";

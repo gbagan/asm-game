@@ -5,6 +5,7 @@
   import Execution from "./Execution.svelte";
   import RetroBackground from "./RetroBackground.svelte";
   import { LEVELS } from "../lib/levels";
+    import Button from "./Button.svelte";
 
   type Props = {
     levelId: string;
@@ -151,27 +152,15 @@
     />
     <div>
       <div class="editor-topbar">
-        <button
-          class="button objective-button"
-          type="button"
-          onclick={openObjectiveDialog}
-        >
+        <Button variant="yellow" onclick={openObjectiveDialog}>
           🎯 Objectif
-        </button>
-        <button
-          class="button help-button"
-          type="button"
-          onclick={openHelpDialog}
-        >
+        </Button>
+        <Button variant="blue" onclick={openHelpDialog}>
           ❔ Aide
-        </button>
-        <button
-          class="button quit-level-button"
-          type="button"
-          onclick={handleQuitLevel}
-        >
+        </Button>
+        <Button variant="gray" onclick={handleQuitLevel}>
           🚪 Quitter
-        </button>
+        </Button>
       </div>
       <Editor
         {palette}
@@ -365,94 +354,6 @@
     align-items: center;
     gap: 1rem;
     margin-bottom: 0.75rem;
-  }
-
-  .button {
-    padding: 0.6rem 1rem;
-    font-weight: 800;
-    font-size: 0.95rem;
-    border-radius: 999px;
-    cursor: pointer;
-    user-select: none;
-    transition:
-      transform 120ms ease,
-      box-shadow 120ms ease,
-      filter 120ms ease;
-  }
-
-  .objective-button {
-    border: 2px solid #f59e0b;
-
-    background: linear-gradient(135deg, #fef3c7, #fde68a);
-    color: #78350f;
-
-    box-shadow:
-      inset 0 -3px 0 rgb(0 0 0 / 0.12),
-      0 4px 10px rgb(245 158 11 / 0.25);
-  }  
-
-  .objective-button:hover {
-    transform: translateY(-2px);
-    filter: brightness(1.03);
-    box-shadow:
-      inset 0 -3px 0 rgb(0 0 0 / 0.12),
-      0 8px 16px rgb(245 158 11 / 0.28);
-  }
-
-  .objective-button:active {
-    transform: translateY(1px);
-    box-shadow:
-      inset 0 -1px 0 rgb(0 0 0 / 0.16),
-      0 2px 6px rgb(245 158 11 / 0.22);
-  }
-
-  .help-button {
-    border: 2px solid #3b82f6;
-    background: linear-gradient(135deg, #dbeafe, #93c5fd);
-    color: #1e3a8a;
-
-    box-shadow:
-      inset 0 -3px 0 rgb(0 0 0 / 0.12),
-      0 4px 10px rgb(59 130 246 / 0.25);
-  }
-
-  .help-button:hover {
-    transform: translateY(-2px);
-    filter: brightness(1.03);
-    box-shadow:
-      inset 0 -3px 0 rgb(0 0 0 / 0.12),
-      0 8px 16px rgb(59 130 246 / 0.28);
-  }
-
-  .help-button:active {
-    transform: translateY(1px);
-    box-shadow:
-      inset 0 -1px 0 rgb(0 0 0 / 0.16),
-      0 2px 6px rgb(59 130 246 / 0.22);
-  }
-
-  .quit-level-button {
-    border: 2px solid #64748b;
-    background: linear-gradient(135deg, #f8fafc, #cbd5e1);
-    color: #334155;
-    box-shadow:
-      inset 0 -3px 0 rgb(0 0 0 / 0.12),
-      0 4px 10px rgb(100 116 139 / 0.25);
-  }
-
-  .quit-level-button:hover {
-    transform: translateY(-2px);
-    filter: brightness(1.03);
-    box-shadow:
-      inset 0 -3px 0 rgb(0 0 0 / 0.12),
-      0 8px 16px rgb(100 116 139 / 0.28);
-  }
-
-  .quit-level-button:active {
-    transform: translateY(1px);
-    box-shadow:
-      inset 0 -1px 0 rgb(0 0 0 / 0.16),
-      0 2px 6px rgb(100 116 139 / 0.22);
   }
 
   .dialog-backdrop {
