@@ -253,6 +253,16 @@
       </header>
 
       <div class="help-content">
+        <div class="game-help-intro">
+          <h3>Principe du jeu</h3>
+          <p>Le but du jeu est de construire un programme qui réalise l’objectif du niveau.</p>
+          <p>
+            Pour créer ton programme, fais glisser les blocs d’instructions dans la zone
+            d’édition, puis lance l’exécution pour vérifier le résultat. Tu peux déplacer
+            les blocs, ajouter des sauts avec des flèches, et utiliser les registres pour
+            mémoriser des valeurs.
+          </p>
+        </div>
         <section class="instruction-help io-help">
           <h3>Input</h3>
           <p>
@@ -271,6 +281,18 @@
           <h3>Jump</h3>
           <p>
             Saute directement vers la cible indiquée par la flèche.
+          </p>
+        </section>
+        <section class="instruction-help jump-help">
+          <h3>Jump If Zero</h3>
+          <p>
+            Saute directement vers la cible indiquée par la flèche si la valeur courante est égale à 0.
+          </p>
+        </section>
+        <section class="instruction-help jump-help">
+          <h3>Jump If Negative</h3>
+          <p>
+            Saute directement vers la cible indiquée par la flèche si la valeur courante est inférieure à 0.
           </p>
         </section>
 
@@ -449,8 +471,6 @@
 
   .objective-dialog {
     width: 30rem;
-    max-height: min(420px, calc(100vh - 2rem));
-
     border: 3px solid #f59e0b;
     border-radius: 1.2rem;
 
@@ -553,7 +573,7 @@
 
   .help-dialog {
     width: 60rem;
-    max-height: 40rem;
+    height: 45rem;
 
     border: 3px solid #3b82f6;
     border-radius: 22px;
@@ -586,53 +606,79 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.85rem;
 
-    max-height: 420px;
     overflow-y: auto;
   }
 
-.instruction-help {
-  padding: 0.9rem 1rem;
-  border-radius: 16px;
-  border: 2px solid #cbd5e1;
-  background: white;
+  .game-help-intro {
+    grid-column: 1 / -1;
+    padding: 1rem 1.1rem;
+    border-radius: 1rem;
+    border: 2px solid #3b82f6;
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+    color: #1e3a8a;
+    box-shadow:
+      inset 0 -3px 0 rgb(0 0 0 / 0.06),
+      0 4px 10px rgb(15 23 42 / 0.08);
+  }
 
-  box-shadow:
-    inset 0 -3px 0 rgb(0 0 0 / 0.06),
-    0 4px 10px rgb(15 23 42 / 0.08);
-}
+  .game-help-intro h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 900;
+  }
 
-.instruction-help h3 {
-  margin: 0 0 0.4rem;
+  .game-help-intro p {
+    line-height: 1.5;
+    font-weight: 600;
+  }
 
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
+  .game-help-intro p + p {
+    margin-top: 0.5rem;
+  }
 
-  font-size: 1.05rem;
-  font-weight: 900;
-}
+  .instruction-help {
+    padding: 0.9rem 1rem;
+    border-radius: 0.9rem;
+    border: 2px solid #cbd5e1;
+    background: white;
 
-.instruction-help p {
-  margin: 0;
-  line-height: 1.45;
-  color: #334155;
-}
+    box-shadow:
+      inset 0 -3px 0 rgb(0 0 0 / 0.06),
+      0 4px 10px rgb(15 23 42 / 0.08);
+  }
 
-.instruction-argument {
-  min-width: 1.5rem;
-  height: 1.5rem;
-  padding: 0 0.35rem;
+  .instruction-help h3 {
+    margin: 0 0 0.4rem;
 
-  display: inline-grid;
-  place-items: center;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
 
-  border-radius: 999px;
-  background: rgb(255 255 255 / 0.75);
-  border: 2px solid rgb(0 0 0 / 0.12);
+    font-size: 1.05rem;
+    font-weight: 900;
+  }
 
-  font-size: 0.85rem;
-  font-weight: 900;
-}
+  .instruction-help p {
+    margin: 0;
+    line-height: 1.45;
+    color: #334155;
+  }
+
+  .instruction-argument {
+    min-width: 1.5rem;
+    height: 1.5rem;
+    padding: 0 0.35rem;
+
+    display: inline-grid;
+    place-items: center;
+
+    border-radius: 999px;
+    background: rgb(255 255 255 / 0.75);
+    border: 2px solid rgb(0 0 0 / 0.12);
+
+    font-size: 0.85rem;
+    font-weight: 900;
+  }
 
 /* mêmes couleurs que tes blocs */
 .io-help {
@@ -657,11 +703,5 @@
   border-color: #22c55e;
   background: linear-gradient(135deg, #dcfce7, #bbf7d0);
   color: #14532d;
-}
-
-@media (max-width: 700px) {
-  .help-content {
-    grid-template-columns: 1fr;
-  }
 }
 </style>

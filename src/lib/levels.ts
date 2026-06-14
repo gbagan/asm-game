@@ -19,7 +19,7 @@ export const LEVELS: Level[] = [
     palette: ["input", "output", "copy-from", "copy-to", "jump"],
     objective: "Prends les deux premiers valeurs de l'INBOX et place les dans l'OUTBOX dans le sens inverse. Repétez jusqu'à ce que l'INBOX soit vide."
   },
-  {  
+  {
     id: "additions",
     title: "Additions",
     registers: [null, null, null],
@@ -45,5 +45,14 @@ export const LEVELS: Level[] = [
     expectedOutput: [32, -48, 0, 64],
     palette: ["input", "output", "copy-from", "copy-to", "add", "jump" ],
     objective: "Pour chaque élément de l'INBOX, multiplie le par 8 et place le résultat dans l'OUTBOX."
+  },
+  {
+    id: "zero-filter",
+    title: "Filtrage de zéros",
+    registers: [null, null, null, null, null, null, null, null],
+    input: [4, 0, 8, -3, 0, 0, 5, 0],
+    expectedOutput: [4, 8, -3, 5],
+    palette: ["input", "output", "copy-from", "copy-to", "add", "jump", "jump-if-zero" ],
+    objective: "Pour chaque élément de l'INBOX, place le dans l'OUTBOX seulement si il est différent de ZERO."
   }
 ]

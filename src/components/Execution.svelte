@@ -49,6 +49,8 @@
   let showCalcArea = $state(false);
   let tokenPositions = $state<Record<string, Point>>({});
 
+  let running: "stopped" | "running" | "pending" = $state("stopped");
+
   let tokens: NumberToken[] = $derived.by(() => {
     layoutVersion;
     return [
@@ -366,6 +368,16 @@
       pc += 1;
     } else if (instruction.type === "jump") {
       pc = program.findIndex(b => b.id === instruction.targetId);
+    } else if (instruction.type === "jump-if-zero") {
+      const token = currentToken();
+      if (!token) {
+        throw new Error("Effectue un Jump If Zero alors que la valeur courante est vide")
+      }
+      if (token.value === 0) {
+        pc = program.findIndex(b => b.id === instruction.targetId);
+      } else {
+        pc += 1;  
+      }
     }
   }
 
@@ -408,22 +420,35 @@
     return input.length === 0 && output.length === expectedOutput.length;
   }
 
+  async function step() {
+    try {
+      await executeInstruction(program[pc]);
+    } catch (e) {
+      executionErrorMessage = (e as Error).message;
+      return false;
+    }
+    setProgramCounter(pc);
+    stepCount += 1;
+    if (isSuccess()) {
+      completeLevel();
+      successDialog = true; // todo
+      running = "stopped";
+      return false;
+    }
+    if (running === "pending") {
+      running = "stopped";
+      return false;
+    }
+    return true;
+  }
+
   async function run() {
     setProgramCounter(0);
-    while (pc < program.length) {
-      try {
-        await executeInstruction(program[pc]);
-      } catch (e) {
-        executionErrorMessage = (e as Error).message;
-        return
-      }
-      setProgramCounter(pc);
-      stepCount += 1;
-      if (isSuccess()) {
-        completeLevel();
-        successDialog = true; // todo
-      }
+    running = "running";
 
+    while (pc < program.length && running === "running") {
+      const cont = await step();
+      if (!cont) return;
       await sleep(300);
     }
   }
@@ -519,9 +544,10 @@
     {/each}
   </div>
   <div class="controls">
-    <button class="button start" onclick={run}>Lancer</button>
-    <button class="button pause">Pause</button>
-    <button class="button fast">Accélerer</button>
+    <button class="button start" disabled={running !== "stopped"} onclick={run}>Lancer</button>
+    <button class="button pause" disabled={running === "stopped"} onclick={() => running = "pending"}>Pause</button>
+    <button class="button fast">Accélérer</button>
+    <button class="button step" disabled={running !== "stopped"} onclick={step}>Pas à pas</button>
   </div>
 </div>
 {#if executionErrorMessage !== null}

@@ -371,8 +371,8 @@
   }
 
   .empty-drop-zone {
-    width: 260px;
-    height: 80px;
+    width: 12rem;
+    height: 5rem;
     border: 2px dashed #aaa;
     border-radius: 12px;
     color: #666;
@@ -382,8 +382,8 @@
   }
 
   .end-drop-zone {
-    width: 260px;
-    min-height: 2.5rem;
+    width: 12.rem;
+    height: 2.5rem;
     border: 2px dashed #bbb;
     border-radius: 10px;
     color: #888;
