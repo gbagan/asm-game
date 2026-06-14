@@ -4,17 +4,16 @@
   import { flip } from "svelte/animate";
   import { draggable, droppable, type DragDropState } from "@thisux/sveltednd";
   import Arrows from "./Arrows.svelte";
-  import type {
-    ProgramBlock,
-    PaletteBlock,
-    DraggedBlock,
-    InstructionType,
-
-    InstructionBlock
-
+  import {
+    type ProgramBlock,
+    type PaletteBlock,
+    type DraggedBlock,
+    type InstructionType,
+    isPaletteBlock,
+    isRegisterBlock
   } from "../lib/types";
-    import ExecutionPointer from "./ExecutionPointer.svelte";
-    import { tick } from "svelte";
+  import ExecutionPointer from "./ExecutionPointer.svelte";
+  import { tick } from "svelte";
 
   const FLIP_DURATION = 220;
   const LABEL = {
@@ -24,135 +23,34 @@
     "jump-if-zero": "jump if zero",
     "jump-if-negative": "jump if < 0",
     "copy-from": "copy from",
-    "copy-to": "copy to"
+    "copy-to": "copy to",
+    "add": "add"
   }
 
   type Props = {
     registers: string [];
+    palette: InstructionType[];
+    program: ProgramBlock[];
+    currentInstructionId?: string;
+    insertBlocksAt: (index: number, block: PaletteBlock) => void;
+    moveBlock: (fromBlock: ProgramBlock, toIndex: number) => boolean;
+    removeBlock: (draggedItem: DraggedBlock) => boolean;
+    setRegister: (blockId: string, register: number) => void;
   }
 
-  let { registers }: Props = $props();
+  let { registers, palette: rawPalette, program, currentInstructionId,
+    insertBlocksAt, moveBlock, removeBlock, setRegister }: Props = $props();
 
   let container: HTMLDivElement | undefined = $state();
-
   let isAnimatingLayout = $state(false);
   let layoutVersion = $state(0);
   let draggingSource = $state<"palette" | "program" | null>(null);
-  let currentInstructionId = $state<string | null>("b2"); // todo
 
-  let palette = $state.raw<PaletteBlock[]>([
-    {
-      id: "palette-input",
-      type: "input",
-      fromPalette: true
-    },
-    {
-      id: "palette-output",
-      type: "output",
-      fromPalette: true
-    },
-    {
-      id: "palette-jump",
-      type: "jump",
-      fromPalette: true
-    },
-    {
-      id: "palette-jump-if-zero",
-      type: "jump-if-zero",
-      fromPalette: true
-    },
-    {
-      id: "palette-copy-from",
-      type: "copy-from",
-      fromPalette: true
-    },
-    {
-      id: "palette-copy-to",
-      type: "copy-to",
-      fromPalette: true
-    }
-  ]);
-
-  let blocks = $state.raw<ProgramBlock[]>([
-    {
-      id: "b1",
-      kind: "instruction",
-      type: "input"
-    },
-    {
-      id: "b2",
-      kind: "instruction",
-      type: "output"
-    }
-  ]);
-
-  function isPaletteBlock(block: DraggedBlock): block is PaletteBlock {
-    return "fromPalette" in block;
-  }
-
-  function createInstructionBlock(type: InstructionType): ProgramBlock {
-    const block: InstructionBlock = {
-      id: crypto.randomUUID(),
-      kind: "instruction",
-      type
-    };
-    if (type === "copy-from" || type === "copy-to") {
-      return { ...block, register: 0 };
-    }
-    return block;
-  }
-
-  function createJumpPair(type: "jump" | "jump-if-zero"): ProgramBlock[] {
-    const jumpId = crypto.randomUUID();
-    const targetId = crypto.randomUUID();
-    return [
-      {
-        id: jumpId,
-        kind: "instruction",
-        type,
-        targetId
-      },
-      {
-        id: targetId,
-        kind: "jump-target",
-        ownerJumpId: jumpId
-      }
-    ];
-  }
-
-  function createBlocksFromPalette(block: PaletteBlock): ProgramBlock[] {
-    if (block.type === "jump" || block.type === "jump-if-zero") {
-      return createJumpPair(block.type);
-    } else { 
-      return [ createInstructionBlock(block.type) ];
-    }
-  }
-
-  function insertBlocksAt(index: number, block: PaletteBlock) {
-    blocks = [
-      ...blocks.slice(0, index),
-      ...createBlocksFromPalette(block),
-      ...blocks.slice(index)
-    ];
-    startLayoutAnimation();
-  }
-
-  function moveBlock(draggedBlock: ProgramBlock, dropIndex: number) {
-    const dragIndex = blocks.findIndex(block => block.id === draggedBlock.id);
-
-    if (dragIndex === -1 || dropIndex === dragIndex || dropIndex === dragIndex + 1) return;
-
-    const nextBlocks = [...blocks];
-    const [movedBlock] = nextBlocks.splice(dragIndex, 1);
-
-    const adjustedDropIndex =
-      dragIndex < dropIndex ? dropIndex - 1 : dropIndex;
-
-    nextBlocks.splice(adjustedDropIndex, 0, movedBlock);
-
-    blocks = nextBlocks;
-    startLayoutAnimation();
-  }
+  let palette = $derived(rawPalette.map(type => ({
+    id: `palette-${type}`,
+    type,
+    fromPalette: true
+  })));
 
   function handleDropZoneDrop(state: DragDropState<DraggedBlock>) {
     const { draggedItem, targetContainer } = state;
@@ -162,30 +60,14 @@
 
     if (isPaletteBlock(draggedItem)) {
       insertBlocksAt(dropIndex, draggedItem);
+      startLayoutAnimation();
     } else {
-      moveBlock(draggedItem, dropIndex);
-    }
-  }
-
-  function removeDraggedBlock(draggedItem: DraggedBlock) {
-    if (isPaletteBlock(draggedItem)) return;
-
-    // Si on supprime un jump, on supprime aussi sa cible.
-    if (draggedItem.kind === "instruction") {
-      blocks = blocks.filter(b =>
-        b.id !== draggedItem.id && b.id !== draggedItem.targetId
-      );
-      startLayoutAnimation();
-    } else if (draggedItem.kind === "jump-target") {
-      blocks = blocks.filter(b =>
-        b.id !== draggedItem.id && b.id !== draggedItem.ownerJumpId
-      );
-      startLayoutAnimation();
+      moveBlock(draggedItem, dropIndex) && startLayoutAnimation();
     }
   }
 
   function handleTrashDrop(state: DragDropState<DraggedBlock>) {
-    removeDraggedBlock(state.draggedItem);
+    removeBlock(state.draggedItem) && startLayoutAnimation();
   }
 
   async function startLayoutAnimation() {
@@ -204,15 +86,6 @@
 
   function closeRegisterPopup() {
     registerPopupBlockId = undefined;
-  }
-
-  function setRegister(blockId: string, register: number) {
-    blocks = blocks.map(block => {
-      if (block.kind !== "instruction") return block;
-      if (block.id !== blockId) return block;
-      return { ...block, register };
-    });
-    closeRegisterPopup();
   }
 
   function handleWindowPointerDown(event: PointerEvent) {
@@ -292,7 +165,7 @@
     <div class="block-label">
         {#if block.kind === "instruction"}
           <strong>{LABEL[block.type]}</strong>
-          {#if block.type === "copy-from" || block.type === "copy-to"}
+          {#if isRegisterBlock(block)}
             <button
               class="register-badge"
               type="button"
@@ -305,7 +178,7 @@
         {/if}
     </div>
     {#if block.kind === "instruction" 
-      && (block.type === "copy-from" || block.type === "copy-to")
+      && isRegisterBlock(block)
       && registerPopupBlockId === block.id
     }
       <div class="register-popup">
@@ -313,7 +186,10 @@
           <button
             type="button"
             class:selected-register={block.register === i}
-            onclick={() => setRegister(block.id, i)}
+            onclick={() => {
+              setRegister(block.id, i);
+              closeRegisterPopup();
+            }}
           >
             {register}
           </button>
@@ -367,10 +243,10 @@
 
     <div class="editor" bind:this={container}>
       <ExecutionPointer {container} blockId={currentInstructionId} {layoutVersion} />
-      <Arrows {blocks} {container} hidden={isAnimatingLayout} {layoutVersion} />
+      <Arrows {program} {container} hidden={isAnimatingLayout} {layoutVersion} />
 
       <div class="program">
-        {#if blocks.length === 0}
+        {#if program.length === 0}
           <div
             class="between-drop-zone empty-drop-zone"
             use:droppable={{
@@ -384,7 +260,7 @@
             Glisse un bloc ici pour commencer.
           </div>
         {:else}
-          {#each blocks as block, index (block.id)}
+          {#each program as block, index (block.id)}
             <div
               animate:flip={{
                 duration: FLIP_DURATION,
@@ -397,7 +273,7 @@
           <div
             class="between-drop-zone end-drop-zone"
             use:droppable={{
-              container: blocks.length.toString(),
+              container: program.length.toString(),
               direction: "vertical",
               callbacks: {
                 onDrop: handleDropZoneDrop
@@ -602,7 +478,6 @@
     color: var(--jump-color);
   }
 
-  .program-block[data-type="add"],
   .program-block[data-type="sub"],
   .program-block[data-type="mul"],
   .program-block[data-type="div"] {
@@ -614,7 +489,9 @@
   .program-block[data-type="copy-from"],
   .palette-block[data-type="copy-from"],
   .program-block[data-type="copy-to"],
-  .palette-block[data-type="copy-to"] {
+  .palette-block[data-type="copy-to"],
+  .program-block[data-type="add"],
+  .palette-block[data-type="add"] {
     background: linear-gradient(135deg, #ede9fe, #ddd6fe);
     border-color: #8b5cf6;
     color: #3b0764;

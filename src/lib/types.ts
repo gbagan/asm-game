@@ -4,7 +4,8 @@ export type InstructionType =
   | "jump"
   | "jump-if-zero"
   | "copy-from"
-  | "copy-to";
+  | "copy-to"
+  | "add";
 
 export type ProgramBlock =
   | InstructionBlock
@@ -31,3 +32,21 @@ export type PaletteBlock = {
 };
 
 export type DraggedBlock = ProgramBlock | PaletteBlock;
+
+export function isPaletteBlock(block: DraggedBlock): block is PaletteBlock {
+  return "fromPalette" in block;
+}
+
+export function isRegisterBlock(block: InstructionBlock) {
+  return ["copy-from", "copy-to", "add"].includes(block.type)
+}
+
+export type Level = {
+  id: string;
+  title: string;  
+  input: number[];
+  registers: (number | null)[];
+  expectedOutput: number[];
+  palette: InstructionType[];
+  objective: string;
+}

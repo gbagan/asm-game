@@ -3,13 +3,13 @@
   import type { ProgramBlock } from "../lib/types";
 
   type Props = {
-    blocks: ProgramBlock[];
+    program: ProgramBlock[];
     container?: HTMLDivElement;
     hidden: boolean;
     layoutVersion: number;
   };
 
-  let { blocks, container, hidden, layoutVersion }: Props = $props();
+  let { program, container, hidden, layoutVersion }: Props = $props();
 
   type Arrow = {
     fromX: number;
@@ -34,7 +34,7 @@
 
     const nextArrows: Arrow[] = [];
 
-    for (const block of blocks) {
+    for (const block of program) {
       if (block.kind !== "instruction") continue;
       if (block.type !== "jump" && block.type !== "jump-if-zero") continue;
       if (!block.targetId) continue;
@@ -86,7 +86,7 @@
   }
 
   $effect(() => {
-    blocks;
+    program;
     layoutVersion;
     updateArrows();
   });

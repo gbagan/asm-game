@@ -1,13 +1,7 @@
 <script lang="ts">
-    import { sleep } from "@gbagan/utils";
+  import { filterMap, sleep } from "@gbagan/utils";
   import { tick } from "svelte";
-
-  type Instruction =
-    | { type: "input" }
-    | { type: "output" }
-    | { type: "copy-to"; register: number }
-    | { type: "copy-from"; register: number }
-    | { type: "add"; register: number };
+  import type { ProgramBlock } from "../lib/types";
 
   type TokenLocation =
     | { kind: "input"; index: number }
@@ -29,41 +23,49 @@
   };
 
   type Props = {
-    initialInput?: number[];
-    maxRegisters?: number;
+    program: ProgramBlock[];
+    initialInput: number[];
+    registers: (number | null)[];
+    registerNames: string[];
+    setProgramCounter: (pc: number) => void;
   };
 
-  let {
-    initialInput = [7, 3, 12, 5, 9],
-    maxRegisters = 12
-  }: Props = $props();
+  let { program, initialInput, registers, registerNames, setProgramCounter }: Props = $props();
 
   let container = $state<HTMLDivElement | undefined>();
-
-  let inputSlots: Array<HTMLDivElement | undefined> = [];
-  let outputSlots: Array<HTMLDivElement | undefined> = [];
-  let registerSlots: Array<HTMLDivElement | undefined> = [];
+  let inputSlots: Array<HTMLDivElement | undefined> = $state([]);
+  let outputSlots: Array<HTMLDivElement | undefined> = $state([]);
+  let registerSlots: Array<HTMLDivElement | undefined> = $state([]);
   let currentSlot = $state<HTMLDivElement | undefined>();
   let calcLeftSlot = $state<HTMLDivElement | undefined>();
   let calcRightSlot = $state<HTMLDivElement | undefined>();
   let calcResultSlot = $state<HTMLDivElement | undefined>();
 
   let showCalcArea = $state(false);
-
-  let isMoving = $state(false);
   let tokenPositions = $state<Record<string, Point>>({});
 
-  let tokens: NumberToken[] = $derived(
-    initialInput.map((value, index) => ({
+  let tokens: NumberToken[] = $derived([
+    ...initialInput.map((value, index) => ({
       id: crypto.randomUUID(),
       value,
       location: { kind: "input", index }
-    }))
-  );
+    })) as NumberToken[],
+    ...filterMap(registers, (value, index) =>
+      value === null 
+      ? null 
+      : {
+        id: crypto.randomUUID(),
+        value,
+        location: { kind: "register", index}
+      }
+    ) as NumberToken[]
+  ]);
 
-  let registers = $derived(
-    Array.from({ length: maxRegisters }, (_, index) => index)
-  );
+  let pc = $derived.by(() => {
+    program;
+    initialInput;
+    return 0
+  })
 
   function visibleTokens() {
     return tokens.filter((token) => token.location.kind !== "hidden");
@@ -82,14 +84,13 @@
   }
 
   function currentToken() {
-    return tokens.find((token) => token.location.kind === "current");
+    return tokens.find(token => token.location.kind === "current");
   }
 
   function registerToken(registerIndex: number) {
-    return tokens.find(
-      (token) =>
-        token.location.kind === "register" &&
-        token.location.index === registerIndex
+    return tokens.find(token =>
+      token.location.kind === "register" &&
+      token.location.index === registerIndex
     );
   }
 
@@ -211,6 +212,7 @@
     from: TokenLocation,
     to: TokenLocation
   ) {
+
     const copyId = crypto.randomUUID();
 
     tokens = [
@@ -228,27 +230,23 @@
     await moveToken(copyId, to);
   }
 
-  async function executeInstruction(instruction: Instruction) {
-    if (isMoving) return;
-
-    isMoving = true;
-
-    if (instruction.type === "input") {
+  async function executeInstruction(instruction: ProgramBlock) {
+    if (instruction.kind === "jump-target") {
+      pc += 1;
+    } else if (instruction.type === "input") {
       const firstInputToken = inputTokens()[0];
       if (!firstInputToken) {
-        isMoving = false;
-        return;
+        throw new Error("Input vide");
       }
 
       hideTokenAt("current");
       await moveToken(firstInputToken.id, { kind: "current" });
-    }
-
-    if (instruction.type === "output") {
+      await sleep(250);
+      pc += 1;
+    } else if (instruction.type === "output") {
       const token = currentToken();
       if (!token) {
-        isMoving = false;
-        return;
+        throw new Error("Valeur courante vide");
       }
 
       pushOutputTokensDown(token.id);
@@ -256,48 +254,43 @@
         kind: "output",
         index: 0
       });
-    }
-
-    if (instruction.type === "copy-to") {
+      await sleep(250);
+      pc += 1;
+    } else if (instruction.type === "copy-to") {
       const token = currentToken();
       if (!token) {
-        isMoving = false;
-        return;
+        throw new Error("Valeur courante vide");
       }
-
       hideTokenAt("register", instruction.register);
 
       await createCopyAndMove(
         token.value,
         { kind: "current" },
-        { kind: "register", index: instruction.register }
+        { kind: "register", index: instruction.register! }
       );
-    }
-
-    if (instruction.type === "copy-from") {
-      const token = registerToken(instruction.register);
+      await sleep(250);
+      pc += 1;
+    } else if (instruction.type === "copy-from") {
+      const token = registerToken(instruction.register!);
       if (!token) {
-        isMoving = false;
-        return;
+        throw new Error("Registre vide");
       }
 
       hideTokenAt("current");
 
       await createCopyAndMove(
         token.value,
-        { kind: "register", index: instruction.register },
+        { kind: "register", index: instruction.register! },
         { kind: "current" }
       );
-    }
-
-    if (instruction.type === "add") {
+      await sleep(250);
+      pc += 1;
+    } else if (instruction.type === "add") {
       const current = currentToken();
-      const register = registerToken(instruction.register);
+      const register = registerToken(instruction.register!);
 
-      if (!current || !register) {
-        isMoving = false;
-        return;
-      }
+      if (!current) throw new Error("Valeur courante vide");
+      if (!register) throw new Error("Registre vide");
 
       showCalcArea = true;
       await tick();
@@ -310,7 +303,7 @@
 
       const registerCopyId = await createTokenAt(
         register.value,
-        { kind: "register", index: instruction.register }
+        { kind: "register", index: instruction.register! }
       );
 
       await Promise.all([
@@ -332,9 +325,10 @@
       await moveToken(resultId, { kind: "current" });
       await sleep(250);
       showCalcArea = false;
+      pc += 1;
+    } else if (instruction.type === "jump") {
+      pc = program.findIndex(b => b.id === instruction.targetId);
     }
-
-    isMoving = false;
   }
 
   async function createTokenAt(value: number, location: TokenLocation) {
@@ -369,6 +363,16 @@
       };
     });
   }
+
+  async function run() {
+    setProgramCounter(0);
+    while (pc < program.length) {
+      await executeInstruction(program[pc]);
+      setProgramCounter(pc);
+      await sleep(300);
+    }
+  }
+
 </script>
 
 <div class="container">
@@ -405,13 +409,13 @@
         <h2>Registres</h2>
 
         <div class="register-grid">
-          {#each registers as registerIndex (registerIndex)}
+          {#each registerNames as name, index}
             <div class="register-cell">
-              <div class="register-label">R{registerIndex + 1}</div>
+              <div class="register-label">{name}</div>
 
               <div
                 class="slot register-slot"
-                bind:this={registerSlots[registerIndex]}
+                bind:this={registerSlots[index]}
               ></div>
             </div>
           {/each}
@@ -442,7 +446,7 @@
     {/each}
   </div>
   <div class="controls">
-    <button class="button start">Lancer</button>
+    <button class="button start" onclick={run}>Lancer</button>
     <button class="button pause">Pause</button>
     <button class="button fast">Accélerer</button>
   </div>

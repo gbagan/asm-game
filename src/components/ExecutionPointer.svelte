@@ -3,7 +3,7 @@
 
   type Props = {
     container?: HTMLDivElement;
-    blockId: string | null;
+    blockId?: string;
     layoutVersion: number;
   };
 
@@ -71,7 +71,7 @@
     width: 2rem;
     height: 1rem;
     pointer-events: none;
-    transition: top 140ms ease;
+    transition: top 300ms ease;
   }
 
   .pointer-line {
