@@ -7,6 +7,7 @@
 
   let home = $state.raw(true);
   let levelId = $state.raw<string | null>(null); 
+  let previousLevel: string | null = $state.raw(null);
 
   function startGame() {
     home = false;
@@ -34,8 +35,10 @@
   }
 
   function handleQuitLevel() {
+    previousLevel = levelId;
     levelId = null;
   }
+  $inspect("previousLevel", previousLevel);
 
 </script>
 
@@ -47,6 +50,7 @@
   <div transition:fade>
     <LevelSelector
       levels={LEVELS}
+      {previousLevel}
       {levelInfos}
       onSelectLevel={level => levelId = level.id}
     />

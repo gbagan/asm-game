@@ -17,7 +17,7 @@ export const LEVELS: Level[] = [
     registers: [],
     expectedOutput: [10, 5, 8, -3, 6, 2, 9, 1],
     palette: ["input", "output", "jump" ],
-    objective: "Place chaque élémént de l'INBOX dans l'OUTBOX. Essaie de le faire en utilisant 3 instructions."
+    objective: "Place chaque élémént de l'INBOX dans l'OUTBOX. Essaie de le faire en utilisant juste 3 instructions."
   },
   { 
     id: "permutations",
@@ -140,7 +140,7 @@ export const LEVELS: Level[] = [
     id: "parity",
     title: "Parité",
     registers: [null, null, null, null],
-    input: [2, 3, -12, 7, 8, 17, 0, 16],
+    input: [2, 3, -12, 7, 8, 13, 0, 10],
     expectedOutput: [2, 8, 0, 16],
     palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],
     objective: "Pour chaque élément de l’INBOX, place le dans l'OUTBOX si il positif et pair (0 compris)."

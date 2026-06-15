@@ -375,6 +375,7 @@
     border-color: #3b82f6;
     border-style: dashed;
     background: rgb(255 255 255 / 0.85);
+    outline: 2px dashed #4caf50;
   }
 
   .empty-drop-zone {
@@ -402,6 +403,7 @@
 
   .end-drop-zone:global(.drag-over) {
     height: 3rem;
+    outline: 2px dashed #4caf50;
   }
 
   :global(.drop-before::before),
@@ -412,9 +414,5 @@
 
   :global(.dragging) {
     opacity: 0.5;
-  }
-
-  :global(.drag-over) {
-    outline: 2px dashed #4caf50;
   }
 </style>

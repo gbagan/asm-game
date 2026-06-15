@@ -5,13 +5,14 @@
 
   type Props = {
     levels: Level[];
-    levelInfos: Record<string, LevelInfo>
+    levelInfos: Record<string, LevelInfo>;
+    previousLevel: string | null;
     onSelectLevel: (level: Level) => void;
   };
 
-  let { levels, levelInfos, onSelectLevel }: Props = $props();
+  let { levels, levelInfos, previousLevel, onSelectLevel }: Props = $props();
 
-  let selectedLevelId: string | null = $derived(levels[0].id);
+  let selectedLevelId: string | null = $derived(previousLevel ?? levels[0].id);
 
   let selectedLevel = $derived(
     levels.find(level => level.id === selectedLevelId)!
@@ -159,6 +160,7 @@
 
 .level-buttons {
   overflow-y: auto;
+  overflow-x: hidden;
   height: 40rem;
   display: grid;
   grid-template-columns: 1fr;
