@@ -342,6 +342,36 @@
             puis place le résultat dans la valeur courante.
           </p>
         </section>
+        <section
+          class="instruction-help arithmetic-help"
+          class:disabled-help={!hasInstruction("inc")}
+        >
+          <h3>Inc <span class="instruction-argument">i</span></h3>
+          <p>
+            Ajoute 1 au registre <strong>i</strong>,
+            puis fais-en une copie dans la valeur courante.
+          </p>
+        </section>
+        <section
+          class="instruction-help arithmetic-help"
+          class:disabled-help={!hasInstruction("dec")}
+        >
+          <h3>Dec <span class="instruction-argument">i</span></h3>
+          <p>
+            Soustrais 1 au registre <strong>i</strong>,
+            puis fais-en une copie dans la valeur courante.
+          </p>
+        </section>
+        <section
+          class="instruction-help"
+          class:disabled-help={true}
+        >
+          <h3>Indirection</h3>
+          <p>
+            Quand activée, une instruction sur le registre <strong>i</strong> utilise plutôt le registre
+            dont le numéro est contenu dans le registre <strong>i</strong>.
+          </p>
+        </section>
       </div>
 
       <footer class="dialog-footer">
