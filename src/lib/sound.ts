@@ -1,6 +1,7 @@
 let victoryAudio: HTMLAudioElement = new Audio("./victory.opus");
 let stepAudio: HTMLAudioElement = new Audio("./step.opus");
 let failureAudio: HTMLAudioElement = new Audio("./failure.opus");
+let discardAudio: HTMLAudioElement = new Audio("./discard2.opus");
 
 export function playVictorySound() {
   victoryAudio.volume = 0.6;
@@ -18,4 +19,10 @@ export function playFailureSound() {
   failureAudio.volume = 1;
   failureAudio.currentTime = 0;
   failureAudio.play();
+}
+
+export function playDiscardSound() {
+  discardAudio.volume = 1;
+  discardAudio.currentTime = 0;
+  discardAudio.play();
 }

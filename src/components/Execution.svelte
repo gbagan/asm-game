@@ -2,8 +2,7 @@
   import { count, filterMap, sleep } from "@gbagan/utils";
   import { tick } from "svelte";
   import type { LevelInfo, ProgramBlock } from "../lib/types";
-  import { playFailureSound, playStepSound, playVictorySound } from "../lib/sound";
-  import { fade } from "svelte/transition";
+  import { playDiscardSound, playFailureSound, playStepSound, playVictorySound } from "../lib/sound";
   import Button from "./Button.svelte";
 
   type TokenLocation =
@@ -18,6 +17,10 @@
     id: string;
     value: number;
     location: TokenLocation;
+    discarding?: boolean;
+    discardDx?: number;
+    discardDy?: number;
+    discardRotation?: number;
   };
 
   type Point = {
@@ -50,7 +53,7 @@
 
   let layoutVersion = $state(0);
   let showCalcArea = $state(false);
-  let tokenPositions = $state<Record<string, Point>>({});
+  let tokenPositions = $state.raw<Record<string, Point>>({});
 
   let running: "stopped" | "running" | "pending" = $state("stopped");
 
@@ -271,6 +274,55 @@
     await moveToken(copyId, to);
   }
 
+  async function discardToken(tokenId: string) {
+    const direction = Math.random() < 0.5 ? -1 : 1;
+
+    const discardDx = direction * (120 + Math.random() * 80);
+    const discardDy = -90 - Math.random() * 60;
+    const discardRotation = direction * (260 + Math.random() * 120);
+
+    tokens = tokens.map(token =>
+      token.id === tokenId
+        ? {
+          ...token,
+          discarding: true,
+          discardDx,
+          discardDy,
+          discardRotation
+          }
+        : token
+    );
+
+    await sleep(520);
+
+    tokens = tokens.map((token) =>
+      token.id === tokenId
+        ? {
+          ...token,
+          location: { kind: "hidden" },
+          discarding: false,
+          discardDx: undefined,
+          discardDy: undefined,
+          discardRotation: undefined
+        }
+        : token
+    );
+  }
+
+  async function discardCurrentToken() {
+    const token = currentToken();
+    if (!token) return;
+    playDiscardSound();
+    await discardToken(token.id);
+  }
+
+  async function discardRegisterToken(registerIndex: number) {
+    const token = registerToken(registerIndex);
+    if (!token) return;
+    playDiscardSound();
+    await discardToken(token.id);
+  }
+
   async function executeOperation(name: string, registerId: number, op: (a: number, b: number) => number) {
     const current = currentToken();
     const register = registerToken(registerId);
@@ -322,7 +374,8 @@
         throw new Error("Tente d'exécuter l'instruction Input alors que l'entrée est vide");
       }
 
-      hideTokenAt("current");
+      await discardCurrentToken();
+
       playStepSound();
       await moveToken(firstInputToken.id, { kind: "current" });
       await sleep(400);
@@ -353,7 +406,7 @@
       if (!token) {
         throw new Error("Tente de copier la valeur courante alors qu'elle est vide");
       }
-      hideTokenAt("register", instruction.register);
+      await discardRegisterToken(instruction.register!)
       playStepSound();
       await createCopyAndMove(
         token.value,
@@ -368,7 +421,7 @@
         throw new Error("Tente de copier un registre vide");
       }
 
-      hideTokenAt("current");
+      discardCurrentToken();
       playStepSound();
       await createCopyAndMove(
         token.value,
@@ -566,13 +619,17 @@
 
     {#each safeVisibleTokens() as token (token.id)}
         <div
-          transition:fade
           class="number-token"
-          style:left="{tokenPositions[token.id].x}px"
-          style:top="{tokenPositions[token.id].y}px"
+          class:token-discarding={token.discarding}
+          style:left={`${tokenPositions[token.id].x}px`}
+          style:top={`${tokenPositions[token.id].y}px`}
+          style:--discard-dx={`${token.discardDx ?? 0}px`}
+          style:--discard-dy={`${token.discardDy ?? 0}px`}
+          style:--discard-rotation={`${token.discardRotation ?? 0}deg`}
         >
           {token.value}
         </div>
+        
     {/each}
   </div>
   <div class="controls">
@@ -840,6 +897,42 @@ h2 {
       border-color 160ms ease,
       box-shadow 160ms ease,
       transform 160ms ease;
+  }
+
+  .number-token.token-discarding {
+    animation: throw-away 520ms cubic-bezier(0.25, 0.8, 0.3, 1) forwards;
+  }
+
+  @keyframes throw-away {
+    0% {
+      opacity: 1;
+      transform:
+        translate(-50%, -50%)
+        translate(0, 0)
+        rotate(0deg)
+        scale(1);
+      filter: none;
+    }
+
+    35% {
+      opacity: 1;
+      transform:
+        translate(-50%, -50%)
+        translate(calc(var(--discard-dx) * 0.45), calc(var(--discard-dy) * 1.15))
+        rotate(calc(var(--discard-rotation) * 0.35))
+        scale(1.04);
+      filter: none;
+    }
+
+    100% {
+      opacity: 0;
+      transform:
+        translate(-50%, -50%)
+        translate(var(--discard-dx), calc(var(--discard-dy) + 170px))
+        rotate(var(--discard-rotation))
+        scale(0.55);
+      filter: grayscale(1);
+    }
   }
 
   .calc-area-visible {
