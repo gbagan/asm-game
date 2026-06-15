@@ -551,6 +551,9 @@
   }
 
   async function step() {
+    if (programCounter === null) {
+      setProgramCounter(0);
+    }
     try {
       if (programCounter !== null && programCounter >= program.length) {
         throw new Error("Le programme s'est terminé avant d'avoir terminé sa tache");
@@ -559,35 +562,37 @@
     } catch (e) {
       playSound("failure");
       executionErrorMessage = (e as Error).message;
+      setProgramCounter(null);
       return false;
     }
     stepCount += 1;
     if (isSuccess()) {
       completeLevel();
       playSound("victory");
+      setProgramCounter(null);
       successDialog = true;
       return false;
     }
     if (running === "pending") {
+      setProgramCounter(null);
       return false;
     }
     return true;
   }
 
   async function run() {
-    setProgramCounter(0);
     running = "running";
 
     while (running === "running") {
       const cont = await step();
       if (!cont) {
         running = "stopped";
-        setProgramCounter(null);
         return;
       }
       await delay(300);
     }
     running = "stopped";
+    setProgramCounter(null);
   }
 
   async function stop() {
