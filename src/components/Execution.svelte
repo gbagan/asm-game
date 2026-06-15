@@ -32,30 +32,29 @@
     program: ProgramBlock[];
     initialInput: number[];
     registers: (number | null)[];
-    registerNames: string[];
     expectedOutput: number[];
     setProgramCounter: (pc: number) => void;
     onQuitLevel: () => void;
     saveInfo: (fn: (info: LevelInfo) => LevelInfo) => void;
   };
 
-  let { program, initialInput, registers, registerNames, expectedOutput,
+  let { program, initialInput, registers, expectedOutput,
     setProgramCounter, onQuitLevel, saveInfo }: Props = $props();
 
-  let container = $state<HTMLDivElement | undefined>();
+  let container: HTMLDivElement | undefined = $state.raw();
   let inputSlots: Array<HTMLDivElement | undefined> = $state([]);
   let outputSlots: Array<HTMLDivElement | undefined> = $state([]);
   let registerSlots: Array<HTMLDivElement | undefined> = $state([]);
-  let currentSlot = $state<HTMLDivElement | undefined>();
-  let calcLeftSlot = $state<HTMLDivElement | undefined>();
-  let calcRightSlot = $state<HTMLDivElement | undefined>();
-  let calcResultSlot = $state<HTMLDivElement | undefined>();
+  let currentSlot: HTMLDivElement | undefined = $state.raw();
+  let calcLeftSlot: HTMLDivElement | undefined = $state.raw();
+  let calcRightSlot: HTMLDivElement | undefined = $state.raw();
+  let calcResultSlot: HTMLDivElement | undefined = $state.raw();
 
-  let layoutVersion = $state(0);
-  let showCalcArea = $state(false);
+  let layoutVersion = $state.raw(0);
+  let showCalcArea = $state.raw(false);
   let tokenPositions = $state.raw<Record<string, Point>>({});
 
-  let running: "stopped" | "running" | "pending" = $state("stopped");
+  let running: "stopped" | "running" | "pending" = $state.raw("stopped");
 
   let initialTokens: NumberToken[] = $derived.by(() => {
     return [
@@ -97,7 +96,7 @@
   });
 
   let executionErrorMessage = $state<string | null>(null);
-  let successDialog = $state(false);
+  let successDialog = $state.raw(false);
 
   let instructionCount = $derived(count(program, b => b.kind === "instruction"));
 
@@ -593,10 +592,9 @@
         <h2>Registres</h2>
 
         <div class="register-grid">
-          {#each registerNames as name, index}
+          {#each registers as _, index}
             <div class="register-cell">
-              <div class="register-label">{name}</div>
-
+              <div class="register-label">{index}</div>
               <div
                 class="slot register-slot"
                 bind:this={registerSlots[index]}

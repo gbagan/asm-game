@@ -3,6 +3,7 @@ export type InstructionType =
   | "output"
   | "jump"
   | "jump-if-zero"
+  | "jump-if-negative"
   | "copy-from"
   | "copy-to"
   | "add"
@@ -38,8 +39,12 @@ export function isPaletteBlock(block: DraggedBlock): block is PaletteBlock {
   return "fromPalette" in block;
 }
 
-export function isRegisterBlock(block: InstructionBlock) {
+export function isRegisterBlock(block: InstructionBlock | PaletteBlock) {
   return ["copy-from", "copy-to", "add", "sub"].includes(block.type)
+}
+
+export function isJumpBlock(block: InstructionBlock | PaletteBlock) {
+  return ["jump", "jump-if-zero", "jump-if-negative"].includes(block.type)
 }
 
 export type Level = {

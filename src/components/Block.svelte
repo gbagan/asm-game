@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { range } from "@gbagan/utils";
   import { isPaletteBlock, isRegisterBlock, type DraggedBlock } from "../lib/types";
 
   const LABEL = {
@@ -15,13 +16,13 @@
 
   type Props = {
     block: DraggedBlock;
-    registerPopupBlockId?: string;
-    registerNames?: string[]; 
+    registerCount?: number;
+    registerPopupBlockId?: string | null;
     openRegisterPopup?: (id: string) => void;
     onRegisterClick?: (id: string, index: number) => void;
   }
 
-  let { block, registerPopupBlockId, registerNames = [],
+  let { block, registerCount = 0, registerPopupBlockId = null,
     openRegisterPopup, onRegisterClick }: Props = $props();
 </script>
 
@@ -47,7 +48,7 @@
               onclick={() => openRegisterPopup?.(block.id)}
               aria-label="Changer le numéro de registre"
             >
-              {registerNames[block.register ?? 0]}
+              {block.register ?? 0}
             </button>
           {/if}
         {/if}
@@ -57,13 +58,13 @@
       && registerPopupBlockId === block.id
     }
       <div class="register-popup">
-        {#each registerNames as register, i}
+        {#each range(0, registerCount) as i}
           <button
             type="button"
             class:selected-register={block.register === i}
             onclick={() => onRegisterClick?.(block.id, i)}
           >
-            {register}
+            {i}
           </button>
         {/each}
       </div>

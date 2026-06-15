@@ -18,7 +18,7 @@
   const FLIP_DURATION = 220;
 
   type Props = {
-    registers: string [];
+    registerCount: number;
     palette: InstructionType[];
     program: ProgramBlock[];
     currentInstructionId?: string;
@@ -28,13 +28,13 @@
     setRegister: (blockId: string, register: number) => void;
   }
 
-  let { registers, palette: rawPalette, program, currentInstructionId,
+  let { registerCount, palette: rawPalette, program, currentInstructionId,
     insertBlocksAt, moveBlock, removeBlock, setRegister }: Props = $props();
 
-  let container: HTMLDivElement | undefined = $state();
-  let isAnimatingLayout = $state(false);
-  let layoutVersion = $state(0);
-  let draggingSource = $state<"palette" | "program" | null>(null);
+  let container: HTMLDivElement | undefined = $state.raw();
+  let isAnimatingLayout = $state.raw(false);
+  let layoutVersion = $state.raw(0);
+  let draggingSource = $state.raw<"palette" | "program" | null>(null);
 
   let palette: PaletteBlock[] = $derived(rawPalette.map(type => ({
     id: `palette-${type}`,
@@ -67,15 +67,15 @@
     layoutVersion++;
   }
 
-  let registerPopupBlockId = $state<string | undefined>();
-  let isRegisterPopupOpen = $derived(registerPopupBlockId !== undefined);
+  let registerPopupBlockId: string | null = $state(null);
+  let isRegisterPopupOpen = $derived(registerPopupBlockId !== null);
 
   function openRegisterPopup(blockId: string) {
     registerPopupBlockId = blockId;
   }
 
   function closeRegisterPopup() {
-    registerPopupBlockId = undefined;
+    registerPopupBlockId = null;
   }
 
   function handleWindowPointerDown(event: PointerEvent) {
@@ -150,7 +150,7 @@
     <Block
       {block}
       {registerPopupBlockId}
-      registerNames={registers}
+      {registerCount}
       {openRegisterPopup}
       onRegisterClick={(id: string, index: number) => {
         setRegister(id, index);
@@ -185,7 +185,7 @@
     </div>
     <div
       class="trash-drop-zone"
-      class:trash-visible={draggingSource !== null}
+      class:trash-visible={draggingSource === "program"}
       use:droppable={{
         container: "trash",
         callbacks: {
@@ -221,6 +221,8 @@
         {:else}
           {#each program as block, index (block.id)}
             <div
+              class="program-row"
+              class:has-open-popup={registerPopupBlockId === block.id}
               animate:flip={{
                 duration: FLIP_DURATION,
                 easing: cubicOut
@@ -328,6 +330,15 @@
     padding: 1rem 6rem 1rem 3rem;
     display: flex;
     flex-direction: column;
+  }
+
+  .program-row {
+    position: relative;
+    z-index: 1;
+  }
+
+  .program-row.has-open-popup {
+    z-index: 100;
   }
 
   .between-drop-zone {

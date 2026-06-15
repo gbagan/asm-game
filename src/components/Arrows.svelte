@@ -1,6 +1,6 @@
 <script lang="ts">
   import { tick } from "svelte";
-  import type { ProgramBlock } from "../lib/types";
+  import { isJumpBlock, type ProgramBlock } from "../lib/types";
 
   type Props = {
     program: ProgramBlock[];
@@ -19,8 +19,8 @@
   };
 
   let arrows = $state.raw<Arrow[]>([]);
-  let width = $state(0);
-  let height = $state(0);
+  let width = $state.raw(0);
+  let height = $state.raw(0);
 
   async function updateArrows() {
     await tick();
@@ -35,9 +35,7 @@
     const nextArrows: Arrow[] = [];
 
     for (const block of program) {
-      if (block.kind !== "instruction") continue;
-      if (block.type !== "jump" && block.type !== "jump-if-zero") continue;
-      if (!block.targetId) continue;
+      if (block.kind !== "instruction" || !isJumpBlock(block) || !block.targetId) continue;
 
       const fromEl = container.querySelector<HTMLElement>(
         `[data-block-id="${block.id}"]`

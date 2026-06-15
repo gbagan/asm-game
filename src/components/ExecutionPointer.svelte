@@ -9,8 +9,8 @@
 
   let { container, blockId, layoutVersion }: Props = $props();
 
-  let y = $state(0);
-  let visible = $state(false);
+  let y = $state.raw(0);
+  let visible = $state.raw(false);
 
   async function updatePosition() {
     await tick();

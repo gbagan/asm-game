@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { isPaletteBlock, isRegisterBlock, type DraggedBlock, type InstructionBlock,
+  import { isJumpBlock, isPaletteBlock, isRegisterBlock, type DraggedBlock, type InstructionBlock,
         type InstructionType, type LevelInfo, type PaletteBlock, type ProgramBlock } from "../lib/types";
   import Editor from "./Editor.svelte";
   import Execution from "./Execution.svelte";
   import RetroBackground from "./RetroBackground.svelte";
   import { LEVELS } from "../lib/levels";
-    import Button from "./Button.svelte";
+  import Button from "./Button.svelte";
 
   type Props = {
     levelId: string;
@@ -18,11 +18,13 @@
 
   let { input, palette, registers, objective, expectedOutput } = $derived(LEVELS.find(lvl => lvl.id === levelId)!);
 
-  let registerNames = $derived(registers.map((_, i) => 'R' + (i+1)));
-
   let program = $derived(levelInfo.program);
-  let dialog = $state<"objective" | "help" | null>(null);
-  let pc = $state(0);
+  let dialog: "objective" | "help" | null = $state.raw(null);
+  let pc = $state.raw(0);
+
+  function hasInstruction(type: InstructionType) {
+    return palette.includes(type);
+  }
 
   function createInstructionBlock(type: InstructionType): ProgramBlock {
     const block: InstructionBlock = {
@@ -36,7 +38,7 @@
     return block;
   }
 
-  function createJumpPair(type: "jump" | "jump-if-zero"): ProgramBlock[] {
+  function createJumpPair(type: InstructionType): ProgramBlock[] {
     const jumpId = crypto.randomUUID();
     const targetId = crypto.randomUUID();
     return [
@@ -55,7 +57,7 @@
   }
 
   function createBlocksFromPalette(block: PaletteBlock): ProgramBlock[] {
-    if (block.type === "jump" || block.type === "jump-if-zero") {
+    if (isJumpBlock(block)) {
       return createJumpPair(block.type);
     } else { 
       return [ createInstructionBlock(block.type) ];
@@ -144,7 +146,6 @@
       {program}
       initialInput={input}
       {registers}
-      {registerNames}
       {expectedOutput}
       {setProgramCounter}
       {saveInfo}
@@ -164,7 +165,7 @@
       </div>
       <Editor
         {palette}
-        registers={["1", "2", "3", "4"]}
+        registerCount={registers.length}
         {program}
         currentInstructionId={program[pc]?.id}
         {insertBlocksAt}
@@ -252,61 +253,88 @@
             mémoriser des valeurs.
           </p>
         </div>
-        <section class="instruction-help io-help">
+        <section
+          class="instruction-help io-help"
+          class:disabled-help={!hasInstruction("input")}
+        >
           <h3>Input</h3>
           <p>
             Prend le premier nombre de l’input et le place dans la valeur courante.
           </p>
         </section>
 
-        <section class="instruction-help io-help">
+        <section
+          class="instruction-help io-help"
+          class:disabled-help={!hasInstruction("output")}
+        >
           <h3>Output</h3>
           <p>
             Envoie la valeur courante vers l’output.
           </p>
         </section>
 
-        <section class="instruction-help jump-help">
+        <section
+          class="instruction-help jump-help"
+          class:disabled-help={!hasInstruction("jump")}
+        >
           <h3>Jump</h3>
           <p>
             Saute directement vers la cible indiquée par la flèche.
           </p>
         </section>
-        <section class="instruction-help jump-help">
+        <section
+          class="instruction-help jump-help"
+          class:disabled-help={!hasInstruction("jump-if-zero")}
+        >
           <h3>Jump If Zero</h3>
           <p>
             Saute directement vers la cible indiquée par la flèche si la valeur courante est égale à 0.
           </p>
         </section>
-        <section class="instruction-help jump-help">
+        <section
+          class="instruction-help jump-help"
+          class:disabled-help={!hasInstruction("jump-if-negative")}
+        >
           <h3>Jump If Negative</h3>
           <p>
             Saute directement vers la cible indiquée par la flèche si la valeur courante est inférieure à 0.
           </p>
         </section>
 
-        <section class="instruction-help memory-help">
+        <section
+          class="instruction-help memory-help"
+          class:disabled-help={!hasInstruction("copy-from")}
+        >
           <h3>Copy From <span class="instruction-argument">i</span></h3>
           <p>
             Copie la valeur du registre <strong>i</strong> dans la valeur courante.
           </p>
         </section>
 
-        <section class="instruction-help memory-help">
+        <section
+          class="instruction-help memory-help"
+          class:disabled-help={!hasInstruction("copy-to")}
+        >
           <h3>Copy To <span class="instruction-argument">i</span></h3>
           <p>
             Copie la valeur courante dans le registre <strong>i</strong>.
           </p>
         </section>
 
-        <section class="instruction-help arithmetic-help">
+        <section
+          class="instruction-help arithmetic-help"
+          class:disabled-help={!hasInstruction("add")}
+        >
           <h3>Add <span class="instruction-argument">i</span></h3>
           <p>
             Additionne la valeur courante avec la valeur du registre <strong>i</strong>,
             puis place le résultat dans la valeur courante.
           </p>
         </section>
-        <section class="instruction-help arithmetic-help">
+        <section
+          class="instruction-help arithmetic-help"
+          class:disabled-help={!hasInstruction("sub")}
+        >
           <h3>Sub <span class="instruction-argument">i</span></h3>
           <p>
             Soustrait la valeur du registre <strong>i</strong> à la valeur courante,
@@ -610,5 +638,24 @@
     border-color: var(--arith-border);
     background: var(--arith-bg);
     color: var(--arith-color);
+  }
+
+  .instruction-help.disabled-help {
+    filter: grayscale(1);
+    opacity: 0.42;
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #64748b;
+  }
+
+  .instruction-help.disabled-help h3,
+  .instruction-help.disabled-help p {
+    color: #64748b;
+  }
+
+  .instruction-help.disabled-help .instruction-argument {
+    background: #e2e8f0;
+    border-color: #cbd5e1;
+    color: #64748b;
   }
 </style>
