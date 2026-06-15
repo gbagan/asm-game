@@ -43,6 +43,8 @@
     fromPalette: true
   })));
 
+  let isRunning = $derived(currentInstructionId !== undefined);
+
   function handleDropZoneDrop(state: DragDropState<DraggedBlock>) {
     const { draggedItem, targetContainer } = state;
     const dropIndex = Number.parseInt(String(targetContainer), 10);
@@ -139,7 +141,7 @@
   <div
     use:draggable={{
       container: `block-${block.id}`,
-      disabled: isRegisterPopupOpen,
+      disabled: isRegisterPopupOpen || isRunning,
       dragData: block,
       interactive: [ "button" ],
       callbacks: {
@@ -172,7 +174,7 @@
         <div
           use:draggable={{
             container: "palette",
-            disabled: isRegisterPopupOpen,
+            disabled: isRegisterPopupOpen || isRunning,
             dragData: block,
             callbacks: {
               onDragStart: () => { playDragSound(); draggingSource = "palette"},

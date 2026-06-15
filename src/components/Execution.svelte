@@ -539,20 +539,16 @@
     } catch (e) {
       playFailureSound();
       executionErrorMessage = (e as Error).message;
-      running = "stopped";
-      setProgramCounter(null);
       return false;
     }
     stepCount += 1;
     if (isSuccess()) {
       completeLevel();
       playVictorySound();
-      successDialog = true; // todo
-      running = "stopped";
+      successDialog = true;
       return false;
     }
     if (running === "pending") {
-      running = "stopped";
       return false;
     }
     return true;
@@ -564,9 +560,14 @@
 
     while (running === "running") {
       const cont = await step();
-      if (!cont) return;
+      if (!cont) {
+        running = "stopped";
+        setProgramCounter(null);
+        return;
+      }
       await sleep(300);
     }
+    running = "stopped";
   }
 
   async function stop() {
