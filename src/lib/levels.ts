@@ -141,9 +141,9 @@ export const LEVELS: Level[] = [
     title: "Parité",
     registers: [null, null, null, null],
     input: [2, 3, -12, 7, 8, 13, 0, 10],
-    expectedOutput: [2, 8, 0, 16],
+    expectedOutput: [2, 8, 0, 10],
     palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],
-    objective: "Pour chaque élément de l’INBOX, place le dans l'OUTBOX si il positif et pair (0 compris)."
+    objective: "Pour chaque élément de l’INBOX, place le dans l'OUTBOX si il positif et pair (0 compris). Sinone rejette le."
   },
   {
     id: "euclidean",
@@ -153,5 +153,14 @@ export const LEVELS: Level[] = [
     expectedOutput: [5, 2, 4, 0, 4, 3],
     palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],
     objective: "Pour chaque paire d'élément de l’INBOX, produis la division entière du premier par le second et place la dans l'OUTBOX. Place ensuite le reste de la division dans l'OUTBOX. Les éléments sont toujours positifs."
+  },
+    {
+    id: "primality",
+    title: "Primalité",
+    registers: [null, null, null, null, null, null, null, 0],
+    input: [5, 4, 6, 7, 13, 9, 17],
+    expectedOutput: [5, 2, 4, 0, 4, 3],
+    palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],
+    objective: "Pour chaque élément de l’INBOX, place le dans l'OUTBOX seulement si il est premier. Sinon rejette le. Un nombre est premier seulement si il est supérieur ou égal à 2 et ses seuls diviseurs sont 1 et lui même."
   }
 ]

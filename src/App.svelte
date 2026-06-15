@@ -38,8 +38,6 @@
     previousLevel = levelId;
     levelId = null;
   }
-  $inspect("previousLevel", previousLevel);
-
 </script>
 
 {#if home}

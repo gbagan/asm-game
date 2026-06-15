@@ -56,6 +56,11 @@
   let tokenPositions = $state.raw<Record<string, Point>>({});
 
   let running: "stopped" | "running" | "pending" = $state.raw("stopped");
+  let fastMode = $derived.by(() => {
+    layoutVersion;
+    program;
+    return false;
+  });
 
   let initialTokens: NumberToken[] = $derived.by(() => {
     return [
@@ -84,7 +89,6 @@
 
   let stepCount = $derived.by(() => {
     program;
-    initialInput;
     layoutVersion;
     return 0;
   });
@@ -95,6 +99,22 @@
   let modifiedRegister: [number, "inc" | "dec"] | null = $state.raw(null);
 
   let instructionCount = $derived(count(program, b => b.kind === "instruction"));
+
+  async function delay(ms: number) {
+    await sleep(fastMode ? ms / 10 : ms);
+  } 
+
+  function playSound(sound: "step" | "discard" | "victory" | "failure") {
+    if (sound === "step" && !fastMode) {
+      playStepSound();
+    } else if (sound === "discard" && !fastMode) {
+      playDiscardSound();
+    } else if (sound === "victory") {
+      playVictorySound();
+    } else if (sound === "failure") {
+      playFailureSound();
+    }
+  }
 
   function incrementProgramCounter() {
     if (programCounter !== null) {
@@ -251,7 +271,7 @@
     );
 
     await updateTokenPositions();
-    await sleep(700);
+    await delay(700);
   }
 
   async function createCopyAndMove(
@@ -296,7 +316,7 @@
         : token
     );
 
-    await sleep(520);
+    await delay(520);
 
     tokens = tokens.map((token) =>
       token.id === tokenId
@@ -315,14 +335,14 @@
   async function discardCurrentToken() {
     const token = currentToken();
     if (!token) return;
-    playDiscardSound();
+    playSound("discard");
     await discardToken(token.id);
   }
 
   async function discardRegisterToken(registerIndex: number) {
     const token = registerToken(registerIndex);
     if (!token) return;
-    playDiscardSound();
+    playSound("discard");
     await discardToken(token.id);
   }
 
@@ -337,7 +357,7 @@
     await tick();
     await updateTokenPositions();
 
-    playStepSound();
+    playSound("step");
 
     const registerCopyId = await createToken(
       register.value,
@@ -349,7 +369,7 @@
       moveToken(registerCopyId, { kind: "calc", side: "right" })
     ]);
 
-    playStepSound();
+    playSound("step");
     hideTokens([current.id, registerCopyId]);
     const result = op(current.value, register.value);
 
@@ -358,10 +378,10 @@
       { kind: "calc", side: "result" }
     );
 
-    await sleep(400);
+    await delay(400);
     hideTokenAt("current");
     await moveToken(resultId, { kind: "current" });
-    await sleep(250);
+    await delay(250);
     showCalcArea = false;
     incrementProgramCounter();
   }
@@ -371,19 +391,19 @@
     if (!token) {
       throw new Error(`Effectue l'instruction ${instr === "inc" ? "INC" : "Dec"} alors que le registre est vide`)
     }
-    playStepSound();
+    playSound("step");
     modifyToken(token.id, fn);
     modifiedRegister = [registerIndex, instr];
-    await sleep(600);
+    await delay(600);
     modifiedRegister = null;
     await discardCurrentToken();
-    playStepSound();
+    playSound("step");
     await createCopyAndMove(
       fn(token.value),
       { kind: "register", index: registerIndex },
       { kind: "current" }
     );
-    await sleep(250);
+    await delay(250);
     incrementProgramCounter();
   }
 
@@ -400,9 +420,9 @@
 
       await discardCurrentToken();
 
-      playStepSound();
+      playSound("step");
       await moveToken(firstInputToken.id, { kind: "current" });
-      await sleep(400);
+      await delay(400);
       incrementProgramCounter();
     } else if (instruction.type === "output") {
       const token = currentToken();
@@ -411,12 +431,12 @@
       }
 
       pushOutputTokensDown(token.id);
-      playStepSound();
+      playSound("step");
       await moveToken(token.id, {
         kind: "output",
         index: 0
       });
-      await sleep(400);
+      await delay(400);
       let output = outputTokens();
       const actual = output[0].value;
       const expected = expectedOutput[output.length - 1];
@@ -431,13 +451,13 @@
         throw new Error("Tente de copier la valeur courante alors qu'elle est vide");
       }
       await discardRegisterToken(instruction.register!)
-      playStepSound();
+      playSound("step");
       await createCopyAndMove(
         token.value,
         { kind: "current" },
         { kind: "register", index: instruction.register! }
       );
-      await sleep(250);
+      await delay(250);
       incrementProgramCounter();
     } else if (instruction.type === "copy-from") {
       const token = registerToken(instruction.register!);
@@ -446,27 +466,27 @@
       }
 
       await discardCurrentToken();
-      playStepSound();
+      playSound("step");
       await createCopyAndMove(
         token.value,
         { kind: "register", index: instruction.register! },
         { kind: "current" }
       );
-      await sleep(250);
+      await delay(250);
       incrementProgramCounter();
     } else if (instruction.type === "add") {
       await executeOperation("addition", instruction.register!, (a, b) => a + b);
     } else if (instruction.type === "sub") {
       await executeOperation("soustraction", instruction.register!, (a, b) => a - b);
     } else if (instruction.type === "jump") {
-      playStepSound();
+      playSound("step");
       setProgramCounter(program.findIndex(b => b.id === instruction.targetId));
     } else if (instruction.type === "jump-if-zero") {
       const token = currentToken();
       if (!token) {
         throw new Error("Effectue un Jump If Zero alors que la valeur courante est vide")
       }
-      playStepSound();
+      playSound("step");
       if (token.value === 0) {
         setProgramCounter(program.findIndex(b => b.id === instruction.targetId));
       } else {
@@ -477,7 +497,7 @@
       if (!token) {
         throw new Error("Effectue un Jump If Negative alors que la valeur courante est vide")
       }
-      playStepSound();
+      playSound("step");
       if (token.value < 0) {
         setProgramCounter(program.findIndex(b => b.id === instruction.targetId));
       } else {
@@ -537,14 +557,14 @@
       }
       await executeInstruction(program[programCounter ?? 0]);
     } catch (e) {
-      playFailureSound();
+      playSound("failure");
       executionErrorMessage = (e as Error).message;
       return false;
     }
     stepCount += 1;
     if (isSuccess()) {
       completeLevel();
-      playVictorySound();
+      playSound("victory");
       successDialog = true;
       return false;
     }
@@ -565,7 +585,7 @@
         setProgramCounter(null);
         return;
       }
-      await sleep(300);
+      await delay(300);
     }
     running = "stopped";
   }
@@ -575,7 +595,7 @@
       running = "pending";
     }
     while (running === "pending") {
-      await sleep(100);
+      await delay(100);
     }
     layoutVersion += 1;
     setProgramCounter(null);
@@ -686,6 +706,7 @@
     <Button variant="green" disabled={running !== "stopped"} onclick={run}>Lancer</Button>
     <Button variant="yellow" disabled={running === "stopped"} onclick={() => running = "pending"}>Pause</Button>
     <Button variant="red" disabled={running === "pending"} onclick={stop}>Arrêter</Button>
+    <Button variant="gray" disabled={running !== "running"} onclick={() => fastMode = !fastMode}>Accélerer</Button>
     <Button variant="blue" disabled={running !== "stopped"} onclick={step}>Pas à pas</Button>
   </div>
 </div>
