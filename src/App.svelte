@@ -38,6 +38,15 @@
     previousLevel = levelId;
     levelId = null;
   }
+
+  function clearSaves() {
+    const infos: Record<string, LevelInfo> = {};
+    for (const level of LEVELS) {
+      localStorage.removeItem(`coding-game--${level.id}`);
+      infos[level.id] = { completed: false, program: [], instructionCount: 0, stepCount: 0 };
+    }
+    levelInfos = infos;
+  }
 </script>
 
 {#if home}
@@ -51,6 +60,7 @@
       {previousLevel}
       {levelInfos}
       onSelectLevel={level => levelId = level.id}
+      {clearSaves}
     />
   </div>
 {:else}

@@ -1,6 +1,8 @@
 <script lang="ts">
   import type { Level, LevelInfo } from "../lib/types";
   import Block from "./Block.svelte";
+  import Button from "./Button.svelte";
+    import ClearSavesDialog from "./ClearSavesDialog.svelte";
   import LevelBackground from "./LevelBackground.svelte";
 
   type Props = {
@@ -8,9 +10,11 @@
     levelInfos: Record<string, LevelInfo>;
     previousLevel: string | null;
     onSelectLevel: (level: Level) => void;
+    clearSaves: () => void;
   };
 
-  let { levels, levelInfos, previousLevel, onSelectLevel }: Props = $props();
+  let { levels, levelInfos, previousLevel, onSelectLevel, clearSaves }: Props = $props();
+  let showClearDialog = $state.raw(false);
 
   let selectedLevelId: string | null = $derived(previousLevel ?? levels[0].id);
 
@@ -25,11 +29,33 @@
   function startSelectedLevel() {
     onSelectLevel(selectedLevel);
   }
+
+
+  function openClearDialog() {
+    showClearDialog = true;
+  }
+
+  function closeClearDialog() {
+    showClearDialog = false;
+  }
+
+  function confirmClearSaves() {
+    showClearDialog = false;
+    clearSaves();
+  }
 </script>
 
 <div class="screen">
   <LevelBackground />
   <div class="level-selector">
+    <button
+      type="button"
+      class="clear-saves-button"
+      onclick={openClearDialog}
+      title="Effacer les sauvegardes"
+    >
+      🗑
+    </button>
     <aside class="level-list">
       <h2>Choisir un niveau</h2>
 
@@ -62,13 +88,9 @@
       <header class="preview-header">
         <h2>{selectedLevel.title}</h2>
 
-        <button
-          type="button"
-          class="start-button"
-          onclick={startSelectedLevel}
-        >
+        <Button variant="green" onclick={startSelectedLevel}>
           ▶ Commencer
-        </button>
+        </Button>
       </header>
 
       <div class="objective-card">
@@ -106,6 +128,9 @@
     </section>
   </div>
 </div>
+{#if showClearDialog}
+  <ClearSavesDialog onOk={confirmClearSaves} closeDialog={closeClearDialog} />
+{/if}
 
 <style>
   .screen {
@@ -118,218 +143,188 @@
     overflow: hidden;
   }
 
-.level-selector {
-  width: 75rem;
-  margin: 0 auto;
-  padding: 1.5rem;
+  .level-selector {
+    position: relative;
+    width: 75rem;
+    margin: 0 auto;
+    padding: 1.5rem;
 
-  display: flex;
-  gap: 1.25rem;
+    display: flex;
+    gap: 1.25rem;
 
-  box-sizing: border-box;
-}
+    box-sizing: border-box;
+  }
 
-.level-list,
-.level-preview {
-  border-radius: 1.2rem;
-  background: rgb(255 255 255 / 0.78);
-  box-shadow: 0 10px 30px rgb(15 23 42 / 0.14);
-  border: 2px solid rgb(203 213 225 / 0.8);
-}
+  .level-list,
+  .level-preview {
+    border-radius: 1.2rem;
+    background: rgb(255 255 255 / 0.78);
+    box-shadow: 0 10px 30px rgb(15 23 42 / 0.14);
+    border: 2px solid rgb(203 213 225 / 0.8);
+  }
 
-.level-list {
-  padding: 1rem;
-}
+  .level-list {
+    padding: 1rem;
+  }
 
-.level-list h2,
-.level-preview h2,
-.preview-card h3,
-.objective-card h3 {
-  color: #1e293b;
-}
+  .level-list h2,
+  .level-preview h2,
+  .preview-card h3,
+  .objective-card h3 {
+    color: #1e293b;
+  }
 
-.objective-card {
-  height: 10rem;
-}
+  .objective-card {
+    height: 10rem;
+  }
 
-.level-list h2 {
-  margin-bottom: 1rem;
-  font-size: 1.15rem;
-  text-align: center;
-}
+  .level-list h2 {
+    margin-bottom: 1rem;
+    font-size: 1.15rem;
+    text-align: center;
+  }
 
-.level-buttons {
-  overflow-y: auto;
-  overflow-x: hidden;
-  height: 40rem;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.6rem;
-}
+  .level-buttons {
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 40rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+  }
 
-.level-button {
-  width: 10rem;
-  padding: 0.75rem 0.85rem;
+  .level-button {
+    width: 10rem;
+    padding: 0.75rem 0.85rem;
 
-  display: grid;
-  gap: 0.2rem;
+    display: grid;
+    gap: 0.2rem;
 
-  border: 2px solid #cbd5e1;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-  color: #334155;
+    border: 2px solid #cbd5e1;
+    border-radius: 1rem;
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    color: #334155;
 
-  cursor: pointer;
-  text-align: left;
+    cursor: pointer;
+    text-align: left;
 
-  box-shadow:
-    inset 0 -3px 0 rgb(0 0 0 / 0.08),
-    0 4px 10px rgb(15 23 42 / 0.08);
+    box-shadow:
+      inset 0 -3px 0 rgb(0 0 0 / 0.08),
+      0 4px 10px rgb(15 23 42 / 0.08);
 
-  transition:
-    transform 120ms ease,
-    box-shadow 120ms ease,
-    border-color 120ms ease,
-    filter 120ms ease;
-}
+    transition:
+      transform 120ms ease,
+      box-shadow 120ms ease,
+      border-color 120ms ease,
+      filter 120ms ease;
+  }
 
-.level-button:hover {
-  filter: brightness(1.02);
-  transform: translateY(-2px);
-  box-shadow:
-    inset 0 -3px 0 rgb(0 0 0 / 0.08),
-    0 8px 18px rgb(15 23 42 / 0.12);
-}
+  .level-button:hover {
+    filter: brightness(1.02);
+    transform: translateY(-2px);
+    box-shadow:
+      inset 0 -3px 0 rgb(0 0 0 / 0.08),
+      0 8px 18px rgb(15 23 42 / 0.12);
+  }
 
-.level-button.selected {
-  border-color: #3b82f6;
-  background: linear-gradient(135deg, #dbeafe, #93c5fd);
-  color: #1e3a8a;
-}
+  .level-button.selected {
+    border-color: #3b82f6;
+    background: linear-gradient(135deg, #dbeafe, #93c5fd);
+    color: #1e3a8a;
+  }
 
-.level-title {
-  font-weight: 900;
-  font-size: 1rem;
-}
+  .level-title {
+    font-weight: 900;
+    font-size: 1rem;
+  }
 
-.level-title-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
+  .level-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
 
-.level-status {
-  width: 1.5rem;
-  height: 1.5rem;
-  border-radius: 999px;
+  .level-status {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 999px;
 
-  display: grid;
-  place-items: center;
+    display: grid;
+    place-items: center;
+ 
+    flex: 0 0 auto;
 
-  flex: 0 0 auto;
+    font-size: 0.9rem;
+    font-weight: 900;
 
-  font-size: 0.9rem;
-  font-weight: 900;
+    box-shadow:
+      inset 0 -2px 0 rgb(0 0 0 / 0.12),
+      0 2px 6px rgb(15 23 42 / 0.12);
+  }
 
-  box-shadow:
-    inset 0 -2px 0 rgb(0 0 0 / 0.12),
-    0 2px 6px rgb(15 23 42 / 0.12);
-}
+  .level-status.completed {
+    border: 2px solid #22c55e;
+    background: linear-gradient(135deg, #dcfce7, #86efac);
+    color: #14532d;
+  }
 
-.level-status.completed {
-  border: 2px solid #22c55e;
-  background: linear-gradient(135deg, #dcfce7, #86efac);
-  color: #14532d;
-}
+  .level-status.not-completed {
+    border: 2px solid #94a3b8;
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    color: #64748b;
+  }
 
-.level-status.not-completed {
-  border: 2px solid #94a3b8;
-  background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-  color: #64748b;
-}
+  .palette-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    height: 8.5rem;
+    pointer-events: none;
+  }
 
-.palette-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-  height: 8.5rem;
-  pointer-events: none;
-}
+  .level-preview {
+    width: 45rem;
+    padding: 1.25rem;
+  }
 
-.level-preview {
-  width: 45rem;
-  padding: 1.25rem;
-}
+  .preview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
 
-.preview-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
+  .preview-header h2 {
+    font-size: 1.6rem;
+  }
 
-.preview-header h2 {
-  font-size: 1.6rem;
-}
+  .objective-card,
+  .preview-card,
+  .records-card {
+    border-radius: 1rem;
+    border: 2px solid rgb(226 232 240 / 0.9);
+    background: rgb(248 250 252 / 0.8);
+    padding: 1rem;
+  }
 
-.start-button {
-  padding: 0.75rem 1.15rem;
-  border: 2px solid #22c55e;
-  border-radius: 999px;
+  .objective-card,
+  .preview-card {
+    margin-bottom: 1rem;
+  }
 
-  background: linear-gradient(135deg, #dcfce7, #86efac);
-  color: #14532d;
+  .objective-card h3,
+  .preview-card h3,
+  .records-card h3 {
+    margin-bottom: 0.65rem;
+    font-size: 1rem;
+  }
 
-  font-size: 1rem;
-  font-weight: 900;
-
-  cursor: pointer;
-
-  box-shadow:
-    inset 0 -4px 0 rgb(0 0 0 / 0.12),
-    0 6px 14px rgb(34 197 94 / 0.25);
-
-  transition:
-    transform 120ms ease,
-    box-shadow 120ms ease,
-    filter 120ms ease;
-}
-
-.start-button:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.03);
-  box-shadow:
-    inset 0 -4px 0 rgb(0 0 0 / 0.12),
-    0 10px 20px rgb(34 197 94 / 0.3);
-}
-
-.objective-card,
-.preview-card,
-.records-card {
-  border-radius: 1rem;
-  border: 2px solid rgb(226 232 240 / 0.9);
-  background: rgb(248 250 252 / 0.8);
-  padding: 1rem;
-}
-
-.objective-card,
-.preview-card {
-  margin-bottom: 1rem;
-}
-
-.objective-card h3,
-.preview-card h3,
-.records-card h3 {
-  margin-bottom: 0.65rem;
-  font-size: 1rem;
-}
-
-.objective-card p {
-  line-height: 1.5;
-  color: #334155;
-}
+  .objective-card p {
+    line-height: 1.5;
+    color: #334155;
+  }
 
 .record-preview-grid {
   display: grid;
@@ -337,36 +332,66 @@
   gap: 0.75rem;
 }
 
-.record-preview {
-  padding: 0.85rem;
+  .record-preview {
+    padding: 0.85rem;
 
-  border-radius: 16px;
-  border: 2px solid #cbd5e1;
+    border-radius: 16px;
+    border: 2px solid #cbd5e1;
 
-  background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
 
-  display: grid;
-  justify-items: center;
-  gap: 0.25rem;
+    display: grid;
+    justify-items: center;
+    gap: 0.25rem;
 
-  box-shadow:
-    inset 0 -3px 0 rgb(0 0 0 / 0.06),
-    0 4px 10px rgb(15 23 42 / 0.08);
-}
+    box-shadow:
+      inset 0 -3px 0 rgb(0 0 0 / 0.06),
+      0 4px 10px rgb(15 23 42 / 0.08);
+  }
 
-.record-icon {
-  font-size: 1.4rem;
-}
+  .record-icon {
+    font-size: 1.4rem;
+  }
 
-.record-label {
-  font-size: 0.8rem;
-  color: #475569;
-  font-weight: 800;
-}
+  .record-label {
+    font-size: 0.8rem;
+    color: #475569;
+    font-weight: 800;
+  }
 
-.record-preview strong {
-  font-size: 1.8rem;
-  line-height: 1;
-  color: #1e293b;
-}
+  .record-preview strong {
+    font-size: 1.8rem;
+    line-height: 1;
+    color: #1e293b;
+  }
+
+  .clear-saves-button {
+    position: absolute;
+    left: -2rem;
+    top: 1rem;
+    z-index: 20;
+
+    width: 3.5rem;
+    height: 3.5rem;
+
+    border: 2px solid #fecaca;
+    border-radius: 16px;
+
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    color: #991b1b;
+
+    font-size: 2rem;
+    font-weight: 900;
+
+    cursor: pointer;
+
+    box-shadow:
+      inset 0 -4px 0 rgb(0 0 0 / 0.1),
+      0 6px 14px rgb(127 29 29 / 0.18);
+  }
+
+  .clear-saves-button:hover {
+    transform: translateY(-1px);
+    background: linear-gradient(135deg, #fecaca, #fca5a5);
+  }
 </style>
