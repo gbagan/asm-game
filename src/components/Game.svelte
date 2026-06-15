@@ -20,7 +20,7 @@
 
   let program = $derived(levelInfo.program);
   let dialog: "objective" | "help" | null = $state.raw(null);
-  let pc = $state.raw(0);
+  let programCounter: number | null = $state.raw(null);
 
   function hasInstruction(type: InstructionType) {
     return palette.includes(type);
@@ -116,8 +116,8 @@
     });
   }
 
-  function setProgramCounter(r: number) {
-    pc = r;
+  function setProgramCounter(pc: number | null) {
+    programCounter = pc;
   }
 
   function openObjectiveDialog() {
@@ -144,6 +144,7 @@
   <div class="game">
     <Execution
       {program}
+      {programCounter}
       initialInput={input}
       {registers}
       {expectedOutput}
@@ -167,7 +168,7 @@
         {palette}
         registerCount={registers.length}
         {program}
-        currentInstructionId={program[pc]?.id}
+        currentInstructionId={programCounter === null ? undefined : program[programCounter]?.id}
         {insertBlocksAt}
         {moveBlock}
         {removeBlock}

@@ -57,7 +57,7 @@ export const LEVELS: Level[] = [
   },
   {
     id: "tripler",
-    title: "Tripler",
+    title: "Triples",
     registers: [null, null, null],
     input: [3, -7, 5, 0],
     expectedOutput: [9, -21, 15, 0],
@@ -66,12 +66,21 @@ export const LEVELS: Level[] = [
   },
   {
     id: "octupler",
-    title: "Octupler",
+    title: "Octuples",
     registers: [null, null, null],
     input: [4, -6, 0, 8],
     expectedOutput: [32, -48, 0, 64],
     palette: ["input", "output", "copy-from", "copy-to", "add", "jump" ],
     objective: "Pour chaque élément de l'INBOX, multiplie le par 8 et place le résultat dans l'OUTBOX."
+  },
+  {
+    id: "mult40",
+    title: "Multiplication par 40",
+    registers: [null, null, null],
+    input: [4, -6, 0, 8],
+    expectedOutput: [32, -48, 0, 64],
+    palette: ["input", "output", "copy-from", "copy-to", "add", "jump" ],
+    objective: "Pour chaque élément de l'INBOX, multiplie le par 40 et place le résultat dans l'OUTBOX."
   },
   {
     id: "subtract",

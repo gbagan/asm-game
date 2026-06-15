@@ -33,12 +33,13 @@
     initialInput: number[];
     registers: (number | null)[];
     expectedOutput: number[];
-    setProgramCounter: (pc: number) => void;
+    programCounter: number | null
+    setProgramCounter: (pc: number | null) => void;
     onQuitLevel: () => void;
     saveInfo: (fn: (info: LevelInfo) => LevelInfo) => void;
   };
 
-  let { program, initialInput, registers, expectedOutput,
+  let { program, programCounter, initialInput, registers, expectedOutput,
     setProgramCounter, onQuitLevel, saveInfo }: Props = $props();
 
   let container: HTMLDivElement | undefined = $state.raw();
@@ -81,13 +82,6 @@
     return initialTokens;
   });
 
-  let pc = $derived.by(() => {
-    program;
-    initialInput;
-    layoutVersion;
-    return 0
-  });
-
   let stepCount = $derived.by(() => {
     program;
     initialInput;
@@ -101,6 +95,12 @@
   let modifiedRegister: [number, "inc" | "dec"] | null = $state.raw(null);
 
   let instructionCount = $derived(count(program, b => b.kind === "instruction"));
+
+  function incrementProgramCounter() {
+    if (programCounter !== null) {
+      setProgramCounter(programCounter + 1)
+    }
+  }
 
   function closeExecutionErrorDialog() {
     executionErrorMessage = null;
@@ -363,7 +363,7 @@
     await moveToken(resultId, { kind: "current" });
     await sleep(250);
     showCalcArea = false;
-    pc += 1;
+    incrementProgramCounter();
   }
 
   async function bumpRegister(registerIndex: number, instr: "inc" | "dec", fn: (val: number) => number) {
@@ -384,12 +384,12 @@
       { kind: "current" }
     );
     await sleep(250);
-    pc += 1;
+    incrementProgramCounter();
   }
 
   async function executeInstruction(instruction: ProgramBlock) {
     if (instruction.kind === "jump-target") {
-      pc += 1;
+      incrementProgramCounter();
       // ne compte pas comme une étape, pour compenser l'incrément
       stepCount -= 1;
     } else if (instruction.type === "input") {
@@ -403,7 +403,7 @@
       playStepSound();
       await moveToken(firstInputToken.id, { kind: "current" });
       await sleep(400);
-      pc += 1;
+      incrementProgramCounter();
     } else if (instruction.type === "output") {
       const token = currentToken();
       if (!token) {
@@ -424,7 +424,7 @@
         throw new Error(`La valeur ${actual} n'était pas attendue dans l'Output`);
       }
 
-      pc += 1;
+      incrementProgramCounter();
     } else if (instruction.type === "copy-to") {
       const token = currentToken();
       if (!token) {
@@ -438,7 +438,7 @@
         { kind: "register", index: instruction.register! }
       );
       await sleep(250);
-      pc += 1;
+      incrementProgramCounter();
     } else if (instruction.type === "copy-from") {
       const token = registerToken(instruction.register!);
       if (!token) {
@@ -453,14 +453,14 @@
         { kind: "current" }
       );
       await sleep(250);
-      pc += 1;
+      incrementProgramCounter();
     } else if (instruction.type === "add") {
       await executeOperation("addition", instruction.register!, (a, b) => a + b);
     } else if (instruction.type === "sub") {
       await executeOperation("soustraction", instruction.register!, (a, b) => a - b);
     } else if (instruction.type === "jump") {
       playStepSound();
-      pc = program.findIndex(b => b.id === instruction.targetId);
+      setProgramCounter(program.findIndex(b => b.id === instruction.targetId));
     } else if (instruction.type === "jump-if-zero") {
       const token = currentToken();
       if (!token) {
@@ -468,9 +468,9 @@
       }
       playStepSound();
       if (token.value === 0) {
-        pc = program.findIndex(b => b.id === instruction.targetId);
+        setProgramCounter(program.findIndex(b => b.id === instruction.targetId));
       } else {
-        pc += 1;  
+        incrementProgramCounter();
       }
     } else if (instruction.type === "jump-if-negative") {
       const token = currentToken();
@@ -479,9 +479,9 @@
       }
       playStepSound();
       if (token.value < 0) {
-        pc = program.findIndex(b => b.id === instruction.targetId);
+        setProgramCounter(program.findIndex(b => b.id === instruction.targetId));
       } else {
-        pc += 1;  
+        incrementProgramCounter();  
       }
     } else if (instruction.type === "inc") {
       await bumpRegister(instruction.register!, "inc", inc);
@@ -532,17 +532,17 @@
 
   async function step() {
     try {
-      if (pc >= program.length) {
+      if (programCounter !== null && programCounter >= program.length) {
         throw new Error("Le programme s'est terminé avant d'avoir terminé sa tache");
       }
-      await executeInstruction(program[pc]);
+      await executeInstruction(program[programCounter ?? 0]);
     } catch (e) {
       playFailureSound();
       executionErrorMessage = (e as Error).message;
       running = "stopped";
+      setProgramCounter(null);
       return false;
     }
-    setProgramCounter(pc);
     stepCount += 1;
     if (isSuccess()) {
       completeLevel();
@@ -577,6 +577,7 @@
       await sleep(100);
     }
     layoutVersion += 1;
+    setProgramCounter(null);
   }
 
   function completeLevel() {
