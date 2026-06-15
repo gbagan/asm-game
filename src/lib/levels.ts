@@ -137,6 +137,15 @@ export const LEVELS: Level[] = [
     objective: "Pour chaque paire d'élément de l’INBOX, produis la multiplication des deux éléments et place la dans l'OUTBOX. Les éléments sont toujours positifs ou nuls."
   },
   {
+    id: "parity",
+    title: "Parité",
+    registers: [null, null, null, null],
+    input: [2, 3, -12, 7, 8, 17, 0, 16],
+    expectedOutput: [2, 8, 0, 16],
+    palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],
+    objective: "Pour chaque élément de l’INBOX, place le dans l'OUTBOX si il positif et pair (0 compris)."
+  },
+  {
     id: "euclidean",
     title: "Division euclidienne",
     registers: [null, null, null, null],

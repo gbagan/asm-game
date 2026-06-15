@@ -14,7 +14,7 @@
   } from "../lib/types";
   import ExecutionPointer from "./ExecutionPointer.svelte";
   import { tick } from "svelte";
-    import { playDragSound, playDropSound } from "../lib/sound";
+  import { playDragSound, playDropSound } from "../lib/sound";
 
   const FLIP_DURATION = 220;
 
@@ -39,7 +39,7 @@
 
   let registerPopupBlockId: string | null = $state.raw(null);
   let registerPopupPosition: "below" | "above" = $state.raw("below");
-  let isRegisterPopupOpen = $derived(registerPopupBlockId !== null);
+  let isRegisterPopupOpen = $derived(!!registerPopupBlockId);
 
   let palette: PaletteBlock[] = $derived(rawPalette.map(type => ({
     id: `palette-${type}`,
@@ -47,7 +47,7 @@
     fromPalette: true
   })));
 
-  let isRunning = $derived(currentInstructionId !== null);
+  let isRunning = $derived(!!currentInstructionId);
 
   function handleDropZoneDrop(state: DragDropState<DraggedBlock>) {
     const { draggedItem, targetContainer } = state;
@@ -109,7 +109,7 @@
 
   async function scrollCurrentInstructionIntoView() {
     await tick();
-    if (!container || currentInstructionId === null) return;
+    if (!container || !currentInstructionId) return;
     const blockEl = container.querySelector<HTMLElement>(
       `[data-block-id="${currentInstructionId}"]`
     );
