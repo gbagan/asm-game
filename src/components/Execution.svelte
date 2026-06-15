@@ -125,7 +125,7 @@
   function closeExecutionErrorDialog() {
     executionErrorMessage = null;
     layoutVersion += 1;
-    setProgramCounter(0);
+    setProgramCounter(null);
   }
 
   function visibleTokens() {
@@ -216,6 +216,11 @@
     tokens;
     container;
     updateTokenPositions();
+  });
+
+  $effect(() => {
+    layoutVersion;
+    setProgramCounter(null);
   });
 
   function normalizeInputIndexes(nextTokens: NumberToken[]): NumberToken[] {
@@ -569,18 +574,17 @@
     if (isSuccess()) {
       completeLevel();
       playSound("victory");
-      setProgramCounter(null);
       successDialog = true;
       return false;
     }
     if (running === "pending") {
-      setProgramCounter(null);
       return false;
     }
     return true;
   }
 
   async function run() {
+    saveInfo(info => ({...info, program}));
     running = "running";
 
     while (running === "running") {
@@ -592,7 +596,6 @@
       await delay(300);
     }
     running = "stopped";
-    setProgramCounter(null);
   }
 
   async function stop() {
