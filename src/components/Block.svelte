@@ -19,12 +19,13 @@
   type Props = {
     block: DraggedBlock;
     registerCount?: number;
+    registerPopupPosition?: "below" | "above";
     registerPopupBlockId?: string | null;
     openRegisterPopup?: (id: string) => void;
     onRegisterClick?: (id: string, index: number) => void;
   }
 
-  let { block, registerCount = 0, registerPopupBlockId = null,
+  let { block, registerCount = 0, registerPopupBlockId = null, registerPopupPosition = "below",
     openRegisterPopup, onRegisterClick }: Props = $props();
 </script>
 
@@ -36,30 +37,33 @@
   <div
     class:program-block={block.kind === "instruction"}
     class:jump-target-block={block.kind === "jump-target"}
-    class:has-open-popup={registerPopupBlockId !== undefined}
+    class:has-open-popup={registerPopupBlockId !== null}
     data-block-id={block.id}
     data-type={block.kind === "instruction" ? block.type : ""}
   >
     <div class="block-label">
-        {#if block.kind === "instruction"}
-          <strong>{LABEL[block.type]}</strong>
-          {#if isRegisterBlock(block)}
-            <button
-              class="register-badge"
-              type="button"
-              onclick={() => openRegisterPopup?.(block.id)}
-              aria-label="Changer le numéro de registre"
-            >
-              {block.register ?? 0}
-            </button>
-          {/if}
+      {#if block.kind === "instruction"}
+        <strong>{LABEL[block.type]}</strong>
+        {#if isRegisterBlock(block)}
+          <button
+            class="register-badge"
+            type="button"
+            onclick={() => openRegisterPopup?.(block.id)}
+            aria-label="Changer le numéro de registre"
+          >
+            {block.register ?? 0}
+          </button>
         {/if}
+      {/if}
     </div>
     {#if block.kind === "instruction" 
       && isRegisterBlock(block)
       && registerPopupBlockId === block.id
     }
-      <div class="register-popup">
+      <div
+        class="register-popup"
+        class:popup-above={registerPopupPosition === "above"}
+      >
         {#each range(0, registerCount) as i}
           <button
             type="button"
@@ -175,7 +179,7 @@
     color: #334155;
   }
 
-   .register-badge {
+  .register-badge {
     min-width: 1.8rem;
     height: 1.8rem;
     padding: 0 0.45rem;
@@ -186,11 +190,11 @@
     font-weight: 700;
     cursor: pointer;
     line-height: 1;
-  }
-
-  .register-badge:hover {
-    background: white;
-    transform: scale(1.06);
+    
+    &:hover {
+      background: white;
+      transform: scale(1.06);
+    }
   }
 
   .register-popup {
@@ -206,25 +210,30 @@
     border-radius: 0.75rem;
     background: white;
     box-shadow: 0 8px 20px rgb(0 0 0 / 0.18);
-  }
+  
+    &.popup-above {
+      top: auto;
+      bottom: calc(100% + 0.4rem);
+    }
 
-  .register-popup button {
-    width: 2rem;
-    height: 2rem;
-    border: 1px solid #ccc;
-    border-radius: 0.5rem;
-    background: #f8fafc;
-    cursor: pointer;
-    font-weight: 700;
-  }
+    & button {
+      width: 2rem;
+      height: 2rem;
+      border: 1px solid #ccc;
+      border-radius: 0.5rem;
+      background: #f8fafc;
+      cursor: pointer;
+      font-weight: 700;
+    }
 
-  .register-popup button:hover {
-    background: #e2e8f0;
-  }
+    & button:hover {
+      background: #e2e8f0;
+    }
 
-  .register-popup button.selected-register {
-    border-color: #2563eb;
-    background: #dbeafe;
-    color: #1e3a8a;
+    & button.selected-register {
+      border-color: #2563eb;
+      background: #dbeafe;
+      color: #1e3a8a;
+    }
   }
 </style>

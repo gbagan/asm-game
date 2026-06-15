@@ -37,13 +37,17 @@
   let layoutVersion = $state.raw(0);
   let draggingSource = $state.raw<"palette" | "program" | null>(null);
 
+  let registerPopupBlockId: string | null = $state.raw(null);
+  let registerPopupPosition: "below" | "above" = $state.raw("below");
+  let isRegisterPopupOpen = $derived(registerPopupBlockId !== null);
+
   let palette: PaletteBlock[] = $derived(rawPalette.map(type => ({
     id: `palette-${type}`,
     type,
     fromPalette: true
   })));
 
-  let isRunning = $derived(currentInstructionId !== undefined);
+  let isRunning = $derived(currentInstructionId !== null);
 
   function handleDropZoneDrop(state: DragDropState<DraggedBlock>) {
     const { draggedItem, targetContainer } = state;
@@ -70,10 +74,21 @@
     layoutVersion++;
   }
 
-  let registerPopupBlockId: string | null = $state(null);
-  let isRegisterPopupOpen = $derived(registerPopupBlockId !== null);
-
   function openRegisterPopup(blockId: string) {
+    if (!container) return;
+
+    const blockElement = container.querySelector<HTMLElement>(
+      `[data-block-id="${blockId}"]`
+    );
+
+    if (!blockElement) return;
+
+    const editorRect = container.getBoundingClientRect();
+    const blockRect = blockElement.getBoundingClientRect();
+    const spaceBelow = (editorRect.bottom - blockRect.bottom) / editorRect.height;
+    registerPopupPosition =
+      spaceBelow < 0.25 ? "above" : "below";
+
     registerPopupBlockId = blockId;
   }
 
@@ -153,6 +168,7 @@
     <Block
       {block}
       {registerPopupBlockId}
+      {registerPopupPosition}
       {registerCount}
       {openRegisterPopup}
       onRegisterClick={(id: string, index: number) => {

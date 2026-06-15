@@ -21,7 +21,7 @@
   --arith-border: #22c55e;
 
 
-  font: min(2vh, calc(2vw * 10 / 16)) var(--sans);
+  font: min(2vh, calc(2vw * 9 / 16)) var(--sans);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
