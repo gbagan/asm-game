@@ -59,9 +59,7 @@
 
     <section class="level-preview">
       <header class="preview-header">
-        <div>
-          <h2>{selectedLevel.title}</h2>
-        </div>
+        <h2>{selectedLevel.title}</h2>
 
         <button
           type="button"
@@ -88,7 +86,7 @@
           {/each}
         </div>
       </div>
-      <div class="preview-card records-card">
+      <div class="records-card">
         <h3>Records</h3>
         <div class="record-preview-grid">
           <div class="record-preview">
@@ -146,7 +144,6 @@
 .level-preview h2,
 .preview-card h3,
 .objective-card h3 {
-  margin: 0;
   color: #1e293b;
 }
 
@@ -161,6 +158,8 @@
 }
 
 .level-buttons {
+  overflow-y: auto;
+  height: 40rem;
   display: grid;
   grid-template-columns: 1fr;
   gap: 0.6rem;
@@ -252,7 +251,8 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.45rem;
-  height: 7rem;
+  height: 8.5rem;
+  pointer-events: none;
 }
 
 .level-preview {
@@ -304,19 +304,22 @@
 }
 
 .objective-card,
-.preview-card {
+.preview-card,
+.records-card {
   border-radius: 1rem;
   border: 2px solid rgb(226 232 240 / 0.9);
   background: rgb(248 250 252 / 0.8);
+  padding: 1rem;
 }
 
-.objective-card {
-  padding: 1rem;
+.objective-card,
+.preview-card {
   margin-bottom: 1rem;
 }
 
 .objective-card h3,
-.preview-card h3 {
+.preview-card h3,
+.records-card h3 {
   margin-bottom: 0.65rem;
   font-size: 1rem;
 }
@@ -324,11 +327,6 @@
 .objective-card p {
   line-height: 1.5;
   color: #334155;
-}
-
-.preview-card {
-  padding: 1rem;
-  min-width: 0;
 }
 
 .record-preview-grid {

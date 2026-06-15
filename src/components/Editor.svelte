@@ -14,6 +14,7 @@
   } from "../lib/types";
   import ExecutionPointer from "./ExecutionPointer.svelte";
   import { tick } from "svelte";
+    import { playDragSound, playDropSound } from "../lib/sound";
 
   const FLIP_DURATION = 220;
 
@@ -142,8 +143,8 @@
       dragData: block,
       interactive: [ "button" ],
       callbacks: {
-        onDragStart: () => draggingSource = "program",
-        onDragEnd: () => draggingSource = null
+        onDragStart: () => { playDragSound(); draggingSource = "program"},
+        onDragEnd: () => { playDropSound(); draggingSource = null }
       }
     }}
   >
@@ -174,8 +175,8 @@
             disabled: isRegisterPopupOpen,
             dragData: block,
             callbacks: {
-              onDragStart: () => draggingSource = "palette",
-              onDragEnd: () => draggingSource = null
+              onDragStart: () => { playDragSound(); draggingSource = "palette"},
+              onDragEnd: () => { playDropSound(); draggingSource = null }
             }
           }}
         >

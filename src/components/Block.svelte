@@ -11,7 +11,9 @@
     "copy-from": "copy from",
     "copy-to": "copy to",
     "add": "add",
-    "sub": "sub"
+    "sub": "sub",
+    "inc": "inc",
+    "dec": "dec",
   }
 
   type Props = {
@@ -133,7 +135,9 @@
   .program-block[data-type="jump"],
   .palette-block[data-type="jump"],
   .program-block[data-type="jump-if-zero"],
-  .palette-block[data-type="jump-if-zero"] {
+  .palette-block[data-type="jump-if-zero"],
+  .program-block[data-type="jump-if-negative"],
+  .palette-block[data-type="jump-if-negative"] {
     background: var(--jump-bg);
     border-color: var(--jump-border);
     color: var(--jump-color);
@@ -142,7 +146,11 @@
   .program-block[data-type="add"],
   .palette-block[data-type="add"],
   .program-block[data-type="sub"],
-  .palette-block[data-type="sub"] {
+  .palette-block[data-type="sub"],
+  .program-block[data-type="inc"],
+  .palette-block[data-type="inc"],
+  .program-block[data-type="dec"],
+  .palette-block[data-type="dec"] {
     background: var(--arith-bg);
     border-color: var(--arith-border);
     color: var(--arith-color);

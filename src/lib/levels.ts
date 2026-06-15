@@ -90,5 +90,50 @@ export const LEVELS: Level[] = [
     expectedOutput: [6, 4],
     palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "jump", "jump-if-zero" ],
     objective: "Pour chaque paire d'éléments de l'INBOX, envoie dans l'OUTBOX un de ces éléments si ils sont égaux et rejette les deux sinon."
+  },
+  {
+    id: "absolute",
+    title: "Valeur absolue",
+    registers: [null, null, null, null],
+    input: [5, -4, 0, -91, 63],
+    expectedOutput: [5, 4, 0, 91, 63],
+    palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "jump", "jump-if-zero", "jump-if-negative" ],
+    objective: "Pour chaque élément de l'INBOX, envoie dans l'OUTBOX sa valeur absolue. La valeur absolue d'un nombre est ce nombre auquel on retire son signe."
+  }, 
+  {
+    id: "min-max",
+    title: "Minimum et maximum",
+    registers: [null, null, null, null],
+    input: [5, 3, 0, 8, -3, 7, 8, -5],
+    expectedOutput: [3, 5, 0, 8, -3, 7, -5, 8],
+    palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "jump", "jump-if-zero", "jump-if-negative" ],
+    objective: "Pour chaque paire d'élément de l'INBOX, envoie dans l'OUTBOX le plus petit d'entre eux puis le plus grand."
+  },
+  {
+    id: "countdown",
+    title: "Compte à rebours",
+    registers: [null, null, null, null],
+    input: [5, -4, 0, 3, -1],
+    expectedOutput: [5, 4, 3, 2, 1, 0, -4, -3, -2, -1, 0, 0, 3, 2, 1, 0, -1, 0],
+    palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],
+    objective: "Pour chaque élément de l’INBOX, produis la suite qui le ramène progressivement à ZERO et place tous les nombres obtenus dans l’OUTBOX. Si le nombre est positif, compte à rebours jusqu’à ZERO. S’il est négatif, compte dans l’autre sens jusqu’à ZERO."
+  },
+  {
+    id: "multiplication",
+    title: "Multiplication",
+    registers: [null, null, null, null],
+    input: [2, 4, 7, 3, 5, 17],
+    expectedOutput: [8, 21, 85],
+    palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],
+    objective: "Pour chaque paire d'élément de l’INBOX, produis la multiplication des deux éléments et place la dans l'OUTBOX. Les éléments sont toujours positifs ou nuls."
+  },
+  {
+    id: "euclidean",
+    title: "Division euclidienne",
+    registers: [null, null, null, null],
+    input: [17, 3, 8, 2, 19, 4],
+    expectedOutput: [5, 2, 4, 0, 4, 3],
+    palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],
+    objective: "Pour chaque paire d'élément de l’INBOX, produis la division entière du premier par le second et place la dans l'OUTBOX. Place ensuite le reste de la division dans l'OUTBOX. Les éléments sont toujours positifs."
   }
 ]

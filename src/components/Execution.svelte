@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { count, filterMap, sleep } from "@gbagan/utils";
+  import { count, dec, filterMap, inc, sleep, update } from "@gbagan/utils";
   import { tick } from "svelte";
   import type { LevelInfo, ProgramBlock } from "../lib/types";
   import { playDiscardSound, playFailureSound, playStepSound, playVictorySound } from "../lib/sound";
@@ -97,6 +97,8 @@
 
   let executionErrorMessage = $state<string | null>(null);
   let successDialog = $state.raw(false);
+
+  let modifiedRegister: [number, "inc" | "dec"] | null = $state.raw(null);
 
   let instructionCount = $derived(count(program, b => b.kind === "instruction"));
 
@@ -215,6 +217,12 @@
     });
   }
 
+  function modifyToken(id: string, f: (x: number) => number) {
+    const idx = tokens.findIndex(token => token.id === id);
+    if (idx === -1) return;
+    tokens = update(tokens, [idx, "value"], f);
+  }
+
   function hideTokenAt(locationKind: "current" | "register", index?: number) {
     tokens = tokens.map((token) => {
       if (locationKind === "current" && token.location.kind === "current") {
@@ -233,10 +241,6 @@
     });
   }
 
-  async function waitForAnimation() {
-    await new Promise((resolve) => window.setTimeout(resolve, 700));
-  }
-
   async function moveToken(tokenId: string, location: TokenLocation) {
     tokens = normalizeInputIndexes(
       tokens.map((token) =>
@@ -247,7 +251,7 @@
     );
 
     await updateTokenPositions();
-    await waitForAnimation();
+    await sleep(700);
   }
 
   async function createCopyAndMove(
@@ -335,7 +339,7 @@
 
     playStepSound();
 
-    const registerCopyId = await createTokenAt(
+    const registerCopyId = await createToken(
       register.value,
       { kind: "register", index: registerId }
     );
@@ -349,7 +353,7 @@
     hideTokens([current.id, registerCopyId]);
     const result = op(current.value, register.value);
 
-    const resultId = await createTokenAt(
+    const resultId = await createToken(
       result,
       { kind: "calc", side: "result" }
     );
@@ -359,6 +363,27 @@
     await moveToken(resultId, { kind: "current" });
     await sleep(250);
     showCalcArea = false;
+    pc += 1;
+  }
+
+  async function bumpRegister(registerIndex: number, instr: "inc" | "dec", fn: (val: number) => number) {
+    const token = registerToken(registerIndex);
+    if (!token) {
+      throw new Error(`Effectue l'instruction ${instr === "inc" ? "INC" : "Dec"} alors que le registre est vide`)
+    }
+    playStepSound();
+    modifyToken(token.id, fn);
+    modifiedRegister = [registerIndex, instr];
+    await sleep(600);
+    modifiedRegister = null;
+    await discardCurrentToken();
+    playStepSound();
+    await createCopyAndMove(
+      fn(token.value),
+      { kind: "register", index: registerIndex },
+      { kind: "current" }
+    );
+    await sleep(250);
     pc += 1;
   }
 
@@ -420,7 +445,7 @@
         throw new Error("Tente de copier un registre vide");
       }
 
-      discardCurrentToken();
+      await discardCurrentToken();
       playStepSound();
       await createCopyAndMove(
         token.value,
@@ -447,10 +472,26 @@
       } else {
         pc += 1;  
       }
+    } else if (instruction.type === "jump-if-negative") {
+      const token = currentToken();
+      if (!token) {
+        throw new Error("Effectue un Jump If Negative alors que la valeur courante est vide")
+      }
+      playStepSound();
+      if (token.value < 0) {
+        pc = program.findIndex(b => b.id === instruction.targetId);
+      } else {
+        pc += 1;  
+      }
+    } else if (instruction.type === "inc") {
+      await bumpRegister(instruction.register!, "inc", inc);
+    } else if (instruction.type === "dec") {
+      await bumpRegister(instruction.register!, "dec", dec);
     }
+      
   }
 
-  async function createTokenAt(value: number, location: TokenLocation) {
+  async function createToken(value: number, location: TokenLocation) {
     const id = crypto.randomUUID();
     tokens = [
       ...tokens,
@@ -470,7 +511,7 @@
   }
 
   function pushOutputTokensDown(exceptTokenId?: string) {
-    tokens = tokens.map((token) => {
+    tokens = tokens.map(token => {
       if (token.id === exceptTokenId) return token;
       if (token.location.kind !== "output") return token;
       return {
@@ -593,12 +634,21 @@
 
         <div class="register-grid">
           {#each registers as _, index}
+            {@const isModified = modifiedRegister && modifiedRegister[0] === index}
             <div class="register-cell">
               <div class="register-label">{index}</div>
               <div
                 class="slot register-slot"
+                class:incremented={isModified && modifiedRegister![1] === "inc"}
+                class:decremented={isModified && modifiedRegister![1] === "dec"}
                 bind:this={registerSlots[index]}
-              ></div>
+              >
+                {#if isModified && modifiedRegister![1] === "inc"}
+                  <span class="increment-bubble">+1</span>
+                {:else if isModified && modifiedRegister![1] === "dec"}
+                  <span class="decrement-bubble">-1</span>
+                {/if}
+              </div>
             </div>
           {/each}
         </div>
@@ -824,20 +874,29 @@ h2 {
 }
 
 
-.current-slot {
-  width: 5rem;
-  height: 5rem;
-  border: 0.25rem dashed #fb7185;
-  background: rgb(255 228 230 / 0.5);
-}
+  .current-slot {
+    width: 5rem;
+    height: 5rem;
+    border: 0.25rem dashed #fb7185;
+   background: rgb(255 228 230 / 0.5);
+  }
 
-.register-slot {
-  width: 4.5rem;
-  height: 4.5rem;
-  border-radius: 1.1rem;
-  background: linear-gradient(135deg, #ede9fe, #ddd6fe);
-  border: 4px solid #8b5cf6;
-}
+  .register-slot {
+    position: relative;
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: 1.1rem;
+    background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+    border: 4px solid #8b5cf6;
+  }
+
+  .register-slot.incremented {
+    animation: register-increment-flash 600ms ease-out;
+  }
+
+  .register-slot.decremented {
+    animation: register-decrement-flash 600ms ease-out;
+  }
 
   .number-token {
     position: absolute;
@@ -959,6 +1018,123 @@ h2 {
     font-size: 1.8rem;
     line-height: 1;
   }
+
+.increment-bubble {
+  position: absolute;
+  top: -1.1rem;
+  right: -0.8rem;
+  z-index: 30;
+
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+
+  background: #dcfce7;
+  border: 2px solid #22c55e;
+  color: #166534;
+
+  font-size: 0.9rem;
+  font-weight: 900;
+
+  pointer-events: none;
+
+  animation: increment-bubble-pop 600ms ease-out forwards;
+}
+
+@keyframes register-increment-flash {
+  0% {
+    transform: scale(1);
+    box-shadow: none;
+    border-color: #cbd5e1;
+    background: rgb(248 250 252 / 0.85);
+  }
+
+  25% {
+    transform: scale(1.08);
+    box-shadow:
+      0 0 0 5px rgb(34 197 94 / 0.22),
+      0 8px 18px rgb(34 197 94 / 0.22);
+    border-color: #22c55e;
+    background: #dcfce7;
+  }
+
+  100% {
+    transform: scale(1);
+    box-shadow: none;
+    border-color: #cbd5e1;
+    background: rgb(248 250 252 / 0.85);
+  }
+}
+
+.decrement-bubble {
+  position: absolute;
+  top: -1.1rem;
+  right: -0.8rem;
+  z-index: 30;
+
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+
+  background: #fee2e2;
+  border: 2px solid #ef4444;
+  color: #991b1b;
+
+  font-size: 0.9rem;
+  font-weight: 900;
+
+  pointer-events: none;
+
+  animation: modify-bubble-pop 600ms ease-out forwards;
+}
+
+@keyframes register-decrement-flash {
+  0% {
+    transform: scale(1);
+    box-shadow: none;
+    border-color: #cbd5e1;
+    background: rgb(248 250 252 / 0.85);
+  }
+
+  25% {
+    transform: scale(0.94);
+    box-shadow:
+      0 0 0 5px rgb(239 68 68 / 0.2),
+      0 8px 18px rgb(239 68 68 / 0.18);
+    border-color: #ef4444;
+    background: #fee2e2;
+  }
+
+  60% {
+    transform: scale(1.04);
+  }
+
+  100% {
+    transform: scale(1);
+    box-shadow: none;
+    border-color: #cbd5e1;
+    background: rgb(248 250 252 / 0.85);
+  }
+}
+
+@keyframes modify-bubble-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.6);
+  }
+
+  20% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.12);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(22px) scale(0.85);
+  }
+}
+
+
+
+
 
 
   .controls {

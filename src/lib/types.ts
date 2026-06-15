@@ -7,7 +7,9 @@ export type InstructionType =
   | "copy-from"
   | "copy-to"
   | "add"
-  | "sub";
+  | "sub"
+  | "inc"
+  | "dec";
 
 export type ProgramBlock =
   | InstructionBlock
@@ -40,7 +42,7 @@ export function isPaletteBlock(block: DraggedBlock): block is PaletteBlock {
 }
 
 export function isRegisterBlock(block: InstructionBlock | PaletteBlock) {
-  return ["copy-from", "copy-to", "add", "sub"].includes(block.type)
+  return ["copy-from", "copy-to", "add", "sub", "inc", "dec"].includes(block.type)
 }
 
 export function isJumpBlock(block: InstructionBlock | PaletteBlock) {
