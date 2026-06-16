@@ -19,7 +19,7 @@
 
   let { levelId, levelInfo, saveInfo, onQuitLevel }: Props = $props();
 
-  let { input, palette, registers, objective, expectedOutput } = $derived(LEVELS.find(lvl => lvl.id === levelId)!);
+  let { input, palette, registers, objective, expectedOutput, allowIndirect: indirectMode } = $derived(LEVELS.find(lvl => lvl.id === levelId)!);
 
   let program = $derived(levelInfo.program);
   let dialog: "objective" | "help" | null = $state.raw(null);
@@ -32,7 +32,8 @@
       type
     };
     if (isRegisterBlock(block)) {
-      return { ...block, register: 0 };
+      const indirect = indirectMode ? false : undefined;
+      return { ...block, register: 0, indirect };
     }
     return block;
   }
@@ -115,6 +116,15 @@
     });
   }
 
+  function toggleIndirect(blockId: string) {
+    program = program.map(block => {
+      if (block.id !== blockId) return block;
+      if (block.kind !== "instruction") return block;
+      if (!isRegisterBlock(block)) return block;
+      return { ...block, indirect: !block.indirect };
+    });
+  }
+
   function setProgramCounter(pc: number | null) {
     programCounter = pc;
   }
@@ -172,6 +182,7 @@
         {moveBlock}
         {removeBlock}
         {setRegister}
+        {toggleIndirect}
       />
     </div>
   </div>

@@ -10,7 +10,7 @@
     type PaletteBlock,
     type DraggedBlock,
     type InstructionType,
-    isPaletteBlock,
+    isPaletteBlock
   } from "../lib/types";
   import ExecutionPointer from "./ExecutionPointer.svelte";
   import { tick } from "svelte";
@@ -27,10 +27,11 @@
     moveBlock: (fromBlock: ProgramBlock, toIndex: number) => boolean;
     removeBlock: (draggedItem: DraggedBlock) => boolean;
     setRegister: (blockId: string, register: number) => void;
+    toggleIndirect: (blockId: string) => void;
   }
 
   let { registerCount, palette: rawPalette, program, currentInstructionId,
-    insertBlocksAt, moveBlock, removeBlock, setRegister }: Props = $props();
+    insertBlocksAt, moveBlock, removeBlock, setRegister, toggleIndirect }: Props = $props();
 
   let container: HTMLDivElement | undefined = $state.raw();
   let isAnimatingLayout = $state.raw(false);
@@ -176,6 +177,7 @@
         setRegister(id, index);
         closeRegisterPopup();
       }}
+      toggleIndirect={() => toggleIndirect(block.id)}
     />
   </div>
 {/snippet}

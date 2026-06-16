@@ -8,8 +8,8 @@
     jump: "jump",
     "jump-if-zero": "jump if zero",
     "jump-if-negative": "jump if < 0",
-    "copy-from": "copy from",
-    "copy-to": "copy to",
+    "copy-from": "get",
+    "copy-to": "put",
     "add": "add",
     "sub": "sub",
     "inc": "inc",
@@ -23,10 +23,11 @@
     registerPopupBlockId?: string | null;
     openRegisterPopup?: (id: string) => void;
     onRegisterClick?: (id: string, index: number) => void;
+    toggleIndirect?: () => void;
   }
 
   let { block, registerCount = 0, registerPopupBlockId = null, registerPopupPosition = "below",
-    openRegisterPopup, onRegisterClick }: Props = $props();
+    openRegisterPopup, onRegisterClick, toggleIndirect }: Props = $props();
 </script>
 
 {#if isPaletteBlock(block)}
@@ -45,14 +46,33 @@
       {#if block.kind === "instruction"}
         <strong>{LABEL[block.type]}</strong>
         {#if isRegisterBlock(block)}
-          <button
-            class="register-badge"
-            type="button"
-            onclick={() => openRegisterPopup?.(block.id)}
-            aria-label="Changer le numéro de registre"
-          >
-            {block.register ?? 0}
-          </button>
+          <div class="register-controls">
+            {#if block.indirect !== undefined}
+              <button
+                class="indirect-button"
+                class:indirect-enabled={block.indirect}
+                type="button"
+                onclick={event => {
+                  event.stopPropagation();
+                  toggleIndirect?.();
+                }}
+                aria-label={block.indirect ? "Indirection activée" : "Indirection désactivée"}
+              >
+                {block.indirect ? "*" : ""}
+                <span class="indirect-tooltip">
+                  {block.indirect ? "Indirection activée" : "Indirection désactivée"}
+                </span>
+              </button>
+            {/if}
+            <button
+              class="register-badge"
+              type="button"
+              onclick={() => openRegisterPopup?.(block.id)}
+              aria-label="Changer le numéro de registre"
+            >
+              {block.register ?? 0}
+            </button>
+          </div>
         {/if}
       {/if}
     </div>
@@ -177,6 +197,93 @@
     background: linear-gradient(135deg, #f8fafc, #e2e8f0);
     border-color: #94a3b8;
     color: #334155;
+  }
+
+  .register-controls {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .indirect-button {
+    position: relative;
+
+    width: 1.8rem;
+    height: 1.8rem;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 999px;
+    border: 2px solid #cbd5e1;
+
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    color: #64748b;
+
+    font-size: 1.35rem;
+    font-weight: 900;
+    line-height: 1;
+
+    cursor: pointer;
+
+    box-shadow:
+      inset 0 -3px 0 rgb(0 0 0 / 0.08),
+      0 3px 8px rgb(15 23 42 / 0.12);
+  }
+
+  .indirect-button:hover {
+    transform: translateY(-1px);
+  }
+
+  .indirect-button.indirect-enabled {
+    border-color: #f59e0b;
+    background: linear-gradient(135deg, #fef3c7, #fbbf24);
+    color: #78350f;
+
+    box-shadow:
+      inset 0 -3px 0 rgb(0 0 0 / 0.12),
+      0 0 0 4px rgb(245 158 11 / 0.18),
+      0 4px 10px rgb(120 53 15 / 0.18);
+  }
+
+  .indirect-tooltip {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 0.45rem);
+    z-index: 200;
+    transform: translateX(-50%) translateY(4px);
+    width: max-content;
+    padding: 0.35rem 0.55rem;
+    border-radius: 10px;
+    background: #0f172a;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 800;
+    line-height: 1.2;
+    opacity: 0;
+    pointer-events: none;
+
+    transition:
+      opacity 140ms ease,
+      transform 140ms ease;
+  }
+
+  .indirect-tooltip::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    transform: translateX(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: #0f172a transparent transparent transparent;
+  }
+
+  .indirect-button:hover .indirect-tooltip,
+  .indirect-button:focus-visible .indirect-tooltip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
   }
 
   .register-badge {

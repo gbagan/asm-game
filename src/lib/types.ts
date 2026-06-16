@@ -21,6 +21,7 @@ export type InstructionBlock = {
   type: InstructionType;
   targetId?: string;
   register?: number;
+  indirect?: boolean;
 };
 
 export type JumpTargetBlock = {
@@ -57,6 +58,7 @@ export type Level = {
   expectedOutput: number[];
   palette: InstructionType[];
   objective: string;
+  allowIndirect?: boolean;
 }
 
 export type LevelInfo = {

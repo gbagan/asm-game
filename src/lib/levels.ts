@@ -35,16 +35,16 @@ export const LEVELS: Level[] = [
     input: [4, 0, 8, -3, 0, 0, 5, 0],
     expectedOutput: [4, 8, -3, 5],
     palette: ["input", "output", "jump", "jump-if-zero" ],
-    objective: "Pour chaque élément de l'INPUT, place le dans l'OUTPUT si il est différent de ZERO."
+    objective: "Pour chaque élément de l'INPUT, place le dans l'OUTPUT s'il est différent de ZERO. Sinon rejette le."
   },
   {
     id: "nonzero-filter",
-    title: "Filtrage des non-zéros",
+    title: "Filtrage des positifs",
     registers: [],
-    input: [4, 0, 8, -3, 0, 0, 5, 0],
-    expectedOutput: [0, 0, 0, 0],
-    palette: ["input", "output", "jump", "jump-if-zero" ],
-    objective: "Pour chaque ZERO de l'INPUT, place le dans l'OUTPUT."
+    input: [4, 6, -8, -3, 0, 4, -5, 8],
+    expectedOutput: [-8, -3, 0, -5],
+    palette: ["input", "output", "jump", "jump-if-zero", "jump-if-negative" ],
+    objective: "Pour chaque élément de l'INPUT, place le dans l'OUTPUT s'il est négatif ou nul. Sinon rejette le."
   },
   {
     id: "additions",
@@ -121,7 +121,7 @@ export const LEVELS: Level[] = [
   {
     id: "countdown",
     title: "Compte à rebours",
-    registers: [null, null, null, null],
+    registers: [null, null, null, null, null, null, null, null],
     input: [5, -4, 0, 3, -1],
     expectedOutput: [5, 4, 3, 2, 1, 0, -4, -3, -2, -1, 0, 0, 3, 2, 1, 0, -1, 0],
     palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],
@@ -137,15 +137,6 @@ export const LEVELS: Level[] = [
     objective: "Le premier élément de l'INPUT indique le nombre n. Lis ensuite les n éléments suivants, trouve parmi eux le minimum et le maximum et place les dans l'OUTPUT. Ignore les éléments restants de l'INBOX."
   },
   {
-    id: "multiplication",
-    title: "Multiplication",
-    registers: [null, null, null, null, null, null, null, 0 ],
-    input: [2, 4, 7, 3, 5, 17],
-    expectedOutput: [8, 21, 85],
-    palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],
-    objective: "Pour chaque paire d'élément de l’INPUT, produis la multiplication des deux éléments et place la dans l'OUTPUT. Les éléments sont toujours positifs ou nuls."
-  },
-  {
     id: "parity",
     title: "Parité",
     registers: [null, null, null, null, null, null, null, 0],
@@ -153,6 +144,15 @@ export const LEVELS: Level[] = [
     expectedOutput: [2, 8, 0, 10],
     palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],
     objective: "Pour chaque élément de l’INPUT, place le dans l'OUTPUT si il positif et pair (0 compris). Sinone rejette le."
+  },
+  {
+    id: "multiplication",
+    title: "Multiplication",
+    registers: [null, null, null, null, null, null, null, 0 ],
+    input: [2, 4, 7, 3, 5, 17],
+    expectedOutput: [8, 21, 85],
+    palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],
+    objective: "Pour chaque paire d'élément de l’INPUT, produis la multiplication des deux éléments et place la dans l'OUTPUT. Les éléments sont toujours positifs ou nuls."
   },
   {
     id: "euclidean",
@@ -179,6 +179,17 @@ export const LEVELS: Level[] = [
     input: [9, 12, 7, 35],
     expectedOutput: [3, 3, 2, 2, 3, 7, 5, 7],
     palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],
-    objective: "Pour chaque élément de l’INPUT, place dans l'OUTPUT une séquence de nombres premiers dont le produit est l'élément. Ces nombres doivent être placés dans l'ordre croissant."
+    objective: "Pour chaque nombre de l’INPUT, décompose-le en facteurs premiers, puis place ces facteurs dans l’OUTPUT dans l’ordre croissant."
+  },
+
+    {
+    id: "test",
+    title: "test",
+    registers: [null, null, null, null, null, null, null, 0],
+    input: [9, 12, 7, 35],
+    expectedOutput: [800],
+    palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],
+    objective: "Pour chaque nombre de l’INPUT, décompose-le en facteurs premiers, puis place ces facteurs dans l’OUTPUT dans l’ordre croissant.",
+    allowIndirect: true
   }
 ]

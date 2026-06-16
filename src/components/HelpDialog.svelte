@@ -95,7 +95,7 @@
         class="instruction-help memory-help"
         class:disabled-help={!hasInstruction("copy-from")}
       >
-        <h3>Copy From <span class="instruction-argument">i</span></h3>
+        <h3>Get <span class="instruction-argument">i</span></h3>
         <p>
           Copie la valeur du registre <strong>i</strong> dans la valeur courante.
         </p>
@@ -105,7 +105,7 @@
         class="instruction-help memory-help"
         class:disabled-help={!hasInstruction("copy-to")}
       >
-        <h3>Copy To <span class="instruction-argument">i</span></h3>
+        <h3>Put <span class="instruction-argument">i</span></h3>
         <p>
           Copie la valeur courante dans le registre <strong>i</strong>.
         </p>

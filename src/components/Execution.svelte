@@ -149,11 +149,33 @@
     return tokens.find(token => token.location.kind === "current");
   }
 
-  function registerToken(registerIndex: number) {
-    return tokens.find(token =>
+  function registerToken(registerIndex: number, indirect?: boolean) {
+    const token = tokens.find(token =>
       token.location.kind === "register" &&
       token.location.index === registerIndex
     );
+    if (!indirect) {
+      return token;
+    }
+    if (token === undefined) {
+      throw Error("Le registre est vide");
+    }
+    if (token.value < 0 && token.value > registers.length) {
+      throw Error("Le registre ne contient pas une addresse valide")
+    }
+    return registerToken(token.value, false);
+  }
+
+  function indirectIndex(index: number, indirect?: boolean) {
+    if (!indirect) {
+      return index;
+    } else {
+      const token = tokens.find(token =>
+        token.location.kind === "register" &&
+        token.location.index === index
+      )!;
+      return token.value; 
+    }
   }
 
   function getSlotForLocation(location: TokenLocation): HTMLElement | undefined {
@@ -338,16 +360,16 @@
     await discardToken(token.id);
   }
 
-  async function discardRegisterToken(registerIndex: number) {
-    const token = registerToken(registerIndex);
+  async function discardRegisterToken(registerIndex: number, indirect?: boolean) {
+    const token = registerToken(registerIndex, indirect);
     if (!token) return;
     playSound("discard");
     await discardToken(token.id);
   }
 
-  async function executeOperation(name: string, registerId: number, op: (a: number, b: number) => number) {
+  async function executeOperation(name: string, registerIdx: number, op: (a: number, b: number) => number, indirect?: boolean) {
     const current = currentToken();
-    const register = registerToken(registerId);
+    const register = registerToken(registerIdx, indirect);
 
     if (!current) throw new Error(`Tente de faire une ${name} alors que la valeur courante est vide`);
     if (!register) throw new Error(`Tente de faire une ${name} avec un registre vide`);
@@ -360,7 +382,7 @@
 
     const registerCopyId = await createToken(
       register.value,
-      { kind: "register", index: registerId }
+      { kind: "register", index: indirectIndex(registerIdx, indirect) }
     );
 
     await Promise.all([
@@ -385,21 +407,22 @@
     incrementProgramCounter();
   }
 
-  async function bumpRegister(registerIndex: number, instr: "inc" | "dec", fn: (val: number) => number) {
-    const token = registerToken(registerIndex);
+  async function bumpRegister(registerIndex: number, instr: "inc" | "dec", fn: (val: number) => number, indirect?: boolean) {
+    const token = registerToken(registerIndex, indirect);
+    const index = indirectIndex(registerIndex, indirect);
     if (!token) {
-      throw new Error(`Effectue l'instruction ${instr === "inc" ? "INC" : "Dec"} alors que le registre est vide`)
+      throw new Error("Le registre est vide")
     }
     playSound("step");
     modifyToken(token.id, fn);
-    modifiedRegister = [registerIndex, instr];
+    modifiedRegister = [index, instr];
     await delay(600);
     modifiedRegister = null;
     await discardCurrentToken();
     playSound("step");
     await createCopyAndMove(
       fn(token.value),
-      { kind: "register", index: registerIndex },
+      { kind: "register", index },
       { kind: "current" }
     );
     await delay(250);
@@ -449,34 +472,36 @@
       if (!token) {
         throw new Error("Tente de copier la valeur courante alors qu'elle est vide");
       }
-      await discardRegisterToken(instruction.register!)
+      await discardRegisterToken(instruction.register!, instruction.indirect);
       playSound("step");
+      const index = indirectIndex(instruction.register!, instruction.indirect);
       await createCopyAndMove(
         token.value,
         { kind: "current" },
-        { kind: "register", index: instruction.register! }
+        { kind: "register", index }
       );
       await delay(250);
       incrementProgramCounter();
     } else if (instruction.type === "copy-from") {
-      const token = registerToken(instruction.register!);
+      const token = registerToken(instruction.register!, instruction.indirect);
       if (!token) {
-        throw new Error("Tente de copier un registre vide");
+        throw new Error("Tente de récupérer un registre vide");
       }
 
       await discardCurrentToken();
       playSound("step");
+      const index = indirectIndex(instruction.register!, instruction.indirect);
       await createCopyAndMove(
         token.value,
-        { kind: "register", index: instruction.register! },
+        { kind: "register", index },
         { kind: "current" }
       );
       await delay(250);
       incrementProgramCounter();
     } else if (instruction.type === "add") {
-      await executeOperation("addition", instruction.register!, (a, b) => a + b);
+      await executeOperation("addition", instruction.register!, (a, b) => a + b, instruction.indirect);
     } else if (instruction.type === "sub") {
-      await executeOperation("soustraction", instruction.register!, (a, b) => a - b);
+      await executeOperation("soustraction", instruction.register!, (a, b) => a - b, instruction.indirect);
     } else if (instruction.type === "jump") {
       playSound("step");
       setProgramCounter(program.findIndex(b => b.id === instruction.targetId));
@@ -503,9 +528,9 @@
         incrementProgramCounter();  
       }
     } else if (instruction.type === "inc") {
-      await bumpRegister(instruction.register!, "inc", inc);
+      await bumpRegister(instruction.register!, "inc", inc, instruction.indirect);
     } else if (instruction.type === "dec") {
-      await bumpRegister(instruction.register!, "dec", dec);
+      await bumpRegister(instruction.register!, "dec", dec, instruction.indirect);
     }
       
   }

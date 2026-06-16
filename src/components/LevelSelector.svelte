@@ -99,7 +99,15 @@
       </div>
 
       <div class="preview-card">
-        <h3>Blocs disponibles</h3>
+        <h3>
+          Blocs disponibles
+          <span
+            class="indirection-badge"
+            class:enabled={selectedLevel.allowIndirect}
+          >
+          * Indirection {selectedLevel.allowIndirect ? "autorisée" : "désactivée"}
+          </span>
+        </h3>
 
         <div class="palette-row">
           {#each selectedLevel.palette as instruction}
@@ -363,6 +371,26 @@
     font-size: 1.8rem;
     line-height: 1;
     color: #1e293b;
+  }
+
+  .indirection-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    width: fit-content;
+    padding: 0.3rem 0.6rem;
+    border-radius: 999px;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    color: #64748b;
+    font-size: 0.8rem;
+    font-weight: 900;
+  }
+
+  .indirection-badge.enabled {
+    background: #fef3c7;
+    border-color: #f59e0b;
+    color: #78350f;
   }
 
   .clear-saves-button {
