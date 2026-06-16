@@ -159,7 +159,7 @@
         <Button variant="blue" onclick={openHelpDialog}>
           ❔ Aide
         </Button>
-        <Button variant="gray" onclick={handleQuitLevel}>
+        <Button variant="gray" disabled={programCounter !== null}  onclick={handleQuitLevel}>
           🚪 Quitter
         </Button>
       </div>

@@ -133,10 +133,6 @@
     return tokens.filter((token) => token.location.kind !== "hidden");
   }
 
-  function safeVisibleTokens() {
-    return visibleTokens().filter(token => tokenPositions[token.id])
-  }
-
   function inputTokens() {
     return tokens
       .filter(token => token.location.kind === "input")
@@ -699,19 +695,21 @@
       </div>
     </section>
 
-    {#each safeVisibleTokens() as token (token.id)}
+    {#each visibleTokens() as token (token.id)}
+      {@const pos = tokenPositions[token.id]}
+      {#if pos}
         <div
           class="number-token"
           class:token-discarding={token.discarding}
-          style:left={`${tokenPositions[token.id].x}px`}
-          style:top={`${tokenPositions[token.id].y}px`}
-          style:--discard-dx={`${token.discardDx ?? 0}px`}
-          style:--discard-dy={`${token.discardDy ?? 0}px`}
-          style:--discard-rotation={`${token.discardRotation ?? 0}deg`}
+          style:left="{pos.x}px"
+          style:top="{pos.y}px"
+          style:--discard-dx="{token.discardDx ?? 0}px"
+          style:--discard-dy="{token.discardDy ?? 0}px"
+          style:--discard-rotation="{token.discardRotation ?? 0}deg"
         >
           {token.value}
         </div>
-        
+      {/if}  
     {/each}
   </div>
   <div class="controls">
