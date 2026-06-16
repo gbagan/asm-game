@@ -54,7 +54,7 @@
   let calcResultSlot: HTMLDivElement;
 
   let version = $state.raw(0);
-  let showCalcArea = $state.raw(false);
+  let showCalcArea: "+" | "-" | null = $state.raw(null);
   let tokenPositions = $state.raw<Record<string, Point>>({});
 
   let running: "stopped" | "running" | "pending" = $state.raw("stopped");
@@ -367,14 +367,14 @@
     await discardToken(token.id);
   }
 
-  async function executeOperation(name: string, registerIdx: number, op: (a: number, b: number) => number, indirect?: boolean) {
+  async function executeOperation(name: string, symbol: "+" | "-", registerIdx: number, op: (a: number, b: number) => number, indirect?: boolean) {
     const current = currentToken();
     const register = registerToken(registerIdx, indirect);
 
     if (!current) throw new Error(`Tente de faire une ${name} alors que la valeur courante est vide`);
     if (!register) throw new Error(`Tente de faire une ${name} avec un registre vide`);
 
-    showCalcArea = true;
+    showCalcArea = symbol;
     await tick();
     await updateTokenPositions();
 
@@ -403,7 +403,7 @@
     hideTokenAt("current");
     await moveToken(resultId, { kind: "current" });
     await delay(250);
-    showCalcArea = false;
+    showCalcArea = null;
     incrementProgramCounter();
   }
 
@@ -499,9 +499,9 @@
       await delay(250);
       incrementProgramCounter();
     } else if (instruction.type === "add") {
-      await executeOperation("addition", instruction.register!, (a, b) => a + b, instruction.indirect);
+      await executeOperation("addition", "+", instruction.register!, (a, b) => a + b, instruction.indirect);
     } else if (instruction.type === "sub") {
-      await executeOperation("soustraction", instruction.register!, (a, b) => a - b, instruction.indirect);
+      await executeOperation("soustraction", "-", instruction.register!, (a, b) => a - b, instruction.indirect);
     } else if (instruction.type === "jump") {
       playSound("step");
       setProgramCounter(program.findIndex(b => b.id === instruction.targetId));
@@ -674,9 +674,9 @@
         ></div>
       </div>
 
-      <div class="calc-area" class:calc-area-visible={showCalcArea}>
+      <div class="calc-area" class:calc-area-visible={!!showCalcArea}>
         <div class="slot calc-slot" bind:this={calcLeftSlot}></div>
-        <div class="operator">+</div>
+        <div class="operator">{showCalcArea}</div>
         <div class="slot calc-slot" bind:this={calcRightSlot}></div>
         <div class="operator">=</div>
         <div class="slot calc-slot result-slot" bind:this={calcResultSlot}></div>
@@ -830,13 +830,12 @@ h2 {
   color: #334155;
 }
 
-.slot {
-  width: 4rem;
-  height: 4rem;
-  border-radius: 16px;
-  box-sizing: border-box;
-}
-
+  .slot {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 16px;
+    box-sizing: border-box;
+  }
 
   .current-slot {
     width: 5rem;
@@ -852,14 +851,14 @@ h2 {
     border-radius: 1.1rem;
     background: linear-gradient(135deg, #ede9fe, #ddd6fe);
     border: 4px solid #8b5cf6;
-  }
+  
+    &.incremented {
+      animation: register-increment-flash 600ms ease-out;
+    }
 
-  .register-slot.incremented {
-    animation: register-increment-flash 600ms ease-out;
-  }
-
-  .register-slot.decremented {
-    animation: register-decrement-flash 600ms ease-out;
+    &.decremented {
+      animation: register-decrement-flash 600ms ease-out;
+    }
   }
 
   .number-token {
@@ -890,6 +889,10 @@ h2 {
       0 4px 10px rgb(15 23 42 / 0.14);
 
     pointer-events: none;
+  
+    &.token-discarding {
+      animation: throw-away 520ms cubic-bezier(0.25, 0.8, 0.3, 1) forwards;
+    }
   }
 
   .calc-area {
@@ -918,10 +921,6 @@ h2 {
       border-color 160ms ease,
       box-shadow 160ms ease,
       transform 160ms ease;
-  }
-
-  .number-token.token-discarding {
-    animation: throw-away 520ms cubic-bezier(0.25, 0.8, 0.3, 1) forwards;
   }
 
   @keyframes throw-away {
