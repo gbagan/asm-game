@@ -1,3 +1,4 @@
+import { arrayOf } from "@gbagan/utils"
 import type { Level } from "./types"
 
 export const LEVELS: Level[] = [ 
@@ -121,7 +122,7 @@ export const LEVELS: Level[] = [
   {
     id: "countdown",
     title: "Compte à rebours",
-    registers: [null, null, null, null, null, null, null, null],
+    registers: [null, null, null, null, null, null, null, null, null, null],
     input: [5, -4, 0, 3, -1],
     expectedOutput: [5, 4, 3, 2, 1, 0, -4, -3, -2, -1, 0, 0, 3, 2, 1, 0, -1, 0],
     palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],
@@ -130,7 +131,7 @@ export const LEVELS: Level[] = [
   {
     id: "min-max2",
     title: "Minimum et maximum II",
-    registers: [null, null, null, null, null, null, null, null],
+    registers: [null, null, null, null, null, null, null, null, null, null],
     input: [6, -4, 0, 6, -7, 8, 1, 10, -13, 6, 18],
     expectedOutput: [-7, 8],
     palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],
@@ -139,7 +140,7 @@ export const LEVELS: Level[] = [
   {
     id: "parity",
     title: "Parité",
-    registers: [null, null, null, null, null, null, null, 0],
+    registers: [null, null, null, null, null, null, null, null, null, 0],
     input: [2, 3, -12, 7, 8, 13, 0, 10],
     expectedOutput: [2, 8, 0, 10],
     palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],
@@ -148,7 +149,7 @@ export const LEVELS: Level[] = [
   {
     id: "multiplication",
     title: "Multiplication",
-    registers: [null, null, null, null, null, null, null, 0 ],
+    registers: [null, null, null, null, null, null, null, null, null, 0 ],
     input: [2, 4, 7, 3, 5, 17],
     expectedOutput: [8, 21, 85],
     palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],
@@ -157,7 +158,7 @@ export const LEVELS: Level[] = [
   {
     id: "euclidean",
     title: "Division euclidienne",
-    registers: [null, null, null, null, null, null, null, 0],
+    registers: [null, null, null, null, null, null, null, null, null, 0],
     input: [17, 3, 8, 2, 19, 4],
     expectedOutput: [5, 2, 4, 0, 4, 3],
     palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],
@@ -166,7 +167,7 @@ export const LEVELS: Level[] = [
   {
     id: "primality",
     title: "Primalité",
-    registers: [null, null, null, null, null, null, null, 0],
+    registers: [null, null, null, null, null, null, null, null, null, 0],
     input: [5, 4, 6, 7, -2, 13, 1, 9, 17],
     expectedOutput: [5, 7, 13, 17],
     palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],
@@ -175,21 +176,30 @@ export const LEVELS: Level[] = [
   {
     id: "prime-factors",
     title: "Facteurs premiers",
-    registers: [null, null, null, null, null, null, null, 0],
+    registers: [null, null, null, null, null, null, null, null, null, 0],
     input: [9, 12, 7, 35],
     expectedOutput: [3, 3, 2, 2, 3, 7, 5, 7],
     palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],
     objective: "Pour chaque nombre de l’INPUT, décompose-le en facteurs premiers, puis place ces facteurs dans l’OUTPUT dans l’ordre croissant."
   },
-
-    {
-    id: "test",
-    title: "test",
-    registers: [null, null, null, null, null, null, null, 0],
-    input: [9, 12, 7, 35],
-    expectedOutput: [800],
+  {
+    id: "sequence-inversion",
+    title: "Inversion de séquence",
+    registers: arrayOf<number | null>(15, null).with(14, 0),
+    input: [8, 3, 17, -35, 4, 8, 72, -5, 0, 10, 23],
+    expectedOutput: [-5, 72, 8, 4, -35, 17, 3, 8],
     palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],
-    objective: "Pour chaque nombre de l’INPUT, décompose-le en facteurs premiers, puis place ces facteurs dans l’OUTPUT dans l’ordre croissant.",
+    objective: "Récupère les éléments de l’INPUT jusqu’au premier 0, sans inclure ce 0. Ignore le reste, puis place les éléments récupérés dans l’OUTPUT en ordre inverse. Il y a au plus 10 élément avant le 0",
+    allowIndirect: true
+  },
+  {
+    id: "sequence-sorting",
+    title: "Tri de séquence",
+    registers: arrayOf<number | null>(15, null).with(14, 0),
+    input: [8, 3, 17, -35, 4, 8, 72, -5, 0, 10, 23],
+    expectedOutput: [-35, -5, 3, 4, 8, 8, 17, 72],
+    palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],
+    objective: "Récupère les éléments de l’INPUT jusqu’au premier 0, sans inclure ce 0. Ignore le reste, puis place les éléments récupérés dans l’OUTPUT en ordre croissant. Il y a au plus 10 élément avant le 0",
     allowIndirect: true
   }
 ]

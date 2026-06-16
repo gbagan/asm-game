@@ -764,7 +764,7 @@
   padding: 2rem;
 
   display: grid;
-  grid-template-columns: 8rem 1fr 8rem;
+  grid-template-columns: 7rem 1fr 7rem;
   gap: 2rem;
 
   border-radius: 24px;
@@ -796,7 +796,7 @@ h2 {
 }
 
 .center-panel {
-  width: 25rem;
+  width: 32rem;
   height: 42rem;
   display: grid;
   grid-template-rows: auto 7.5rem 1fr auto;
@@ -815,7 +815,7 @@ h2 {
 
 .register-grid {
   display: grid;
-  grid-template-columns: repeat(4, 5rem);
+  grid-template-columns: repeat(5, 5rem);
   gap: 1rem;
 }
 
