@@ -30,3 +30,92 @@
 html, body {
   user-select: none;
 }
+
+ .global-dialog-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+
+    display: grid;
+    place-items: center;
+
+    background: rgb(15 23 42 / 0.55);
+    backdrop-filter: blur(3px);
+  }
+
+  .global-dialog {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);  
+    overflow: hidden;
+    animation: global-dialog-pop 160ms ease-out;
+    border-radius: 1.2rem;
+  }
+
+  @keyframes global-dialog-pop {
+    from {
+      opacity: 0;
+      transform: translate(-50%, calc(-50%-0.5rem)) scale(0.92);
+    }
+
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%) translateY(0);
+    }
+  }
+
+  .global-dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+  }
+
+  .global-dialog-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+  }
+
+  .global-dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+
+    padding: 1rem 1.25rem;
+  }
+
+  .global-dialog-close-button {
+    width: 2rem;
+    height: 2rem;
+
+    border: none;
+    border-radius: 999px;
+
+    background: rgb(255 255 255 / 0.65);
+    color: #78350f;
+
+    font-size: 1.4rem;
+    font-weight: 900;
+    line-height: 1;
+
+    cursor: pointer;
+    
+    &:hover {
+      background: white;
+    }
+  }
+
+  .global-dialog-content {
+    padding: 1.25rem;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .global-dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+
+    padding: 1rem 1.25rem;
+    border-top: 1px solid rgb(245 158 11 / 0.25);
+  }
