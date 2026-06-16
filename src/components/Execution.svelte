@@ -42,22 +42,22 @@
   let { program, programCounter, initialInput, registers, expectedOutput,
     setProgramCounter, onQuitLevel, saveInfo }: Props = $props();
 
-  let container: HTMLDivElement | undefined = $state.raw();
-  let inputSlots: Array<HTMLDivElement | undefined> = $state([]);
-  let outputSlots: Array<HTMLDivElement | undefined> = $state([]);
-  let registerSlots: Array<HTMLDivElement | undefined> = $state([]);
-  let currentSlot: HTMLDivElement | undefined = $state.raw();
-  let calcLeftSlot: HTMLDivElement | undefined = $state.raw();
-  let calcRightSlot: HTMLDivElement | undefined = $state.raw();
-  let calcResultSlot: HTMLDivElement | undefined = $state.raw();
+  let container: HTMLDivElement;
+  let inputSlots: (HTMLDivElement | undefined)[] = $state([]);
+  let outputSlots: (HTMLDivElement | undefined)[] = $state([]);
+  let registerSlots: (HTMLDivElement | undefined)[] = $state([]);
+  let currentSlot: HTMLDivElement;
+  let calcLeftSlot: HTMLDivElement;
+  let calcRightSlot: HTMLDivElement;
+  let calcResultSlot: HTMLDivElement;
 
-  let layoutVersion = $state.raw(0);
+  let version = $state.raw(0);
   let showCalcArea = $state.raw(false);
   let tokenPositions = $state.raw<Record<string, Point>>({});
 
   let running: "stopped" | "running" | "pending" = $state.raw("stopped");
   let fastMode = $derived.by(() => {
-    layoutVersion;
+    version;
     program;
     return false;
   });
@@ -82,14 +82,14 @@
   });
 
   let tokens: NumberToken[] = $derived.by(() => {
-    layoutVersion;
+    version;
     program;
     return initialTokens;
   });
 
   let stepCount = $derived.by(() => {
     program;
-    layoutVersion;
+    version;
     return 0;
   });
 
@@ -124,7 +124,7 @@
 
   function closeExecutionErrorDialog() {
     executionErrorMessage = null;
-    layoutVersion += 1;
+    version += 1;
     setProgramCounter(null);
   }
 
@@ -186,8 +186,6 @@
   }
 
   function getCenterPosition(element: HTMLElement): Point {
-    if (!container) return { x: 0, y: 0 };
-
     const containerRect = container.getBoundingClientRect();
     const rect = element.getBoundingClientRect();
 
@@ -219,7 +217,7 @@
   });
 
   $effect(() => {
-    layoutVersion;
+    version;
     setProgramCounter(null);
   });
 
@@ -583,6 +581,12 @@
     return true;
   }
 
+  async function oneStep() {
+    running = "running";
+    await step();
+    running = "stopped"
+  }
+
   async function run() {
     saveInfo(info => ({...info, program}));
     running = "running";
@@ -605,7 +609,7 @@
     while (running === "pending") {
       await delay(100);
     }
-    layoutVersion += 1;
+    version += 1;
     setProgramCounter(null);
   }
 
@@ -625,7 +629,7 @@
 
   function restartLevel() { 
     successDialog = false;
-    layoutVersion += 1;
+    version += 1;
   }
 </script>
 
@@ -715,34 +719,24 @@
     <Button variant="yellow" disabled={running === "stopped"} onclick={() => running = "pending"}>Pause</Button>
     <Button variant="red" disabled={running === "pending"} onclick={stop}>Arrêter</Button>
     <Button variant="gray" disabled={running !== "running"} onclick={() => fastMode = !fastMode}>Accélerer</Button>
-    <Button variant="blue" disabled={running !== "stopped"} onclick={step}>Pas à pas</Button>
+    <Button variant="blue" disabled={running !== "stopped"} onclick={oneStep}>Pas à pas</Button>
   </div>
 </div>
 {#if executionErrorMessage !== null}
   <div
-    class="execution-error-backdrop"
+    class="dialog-backdrop"
     role="presentation"
     onclick={closeExecutionErrorDialog}
   >
     <dialog
       class="dialog execution-error-dialog"
       open
-      aria-labelledby="execution-error-title"
       onclick={event => event.stopPropagation()}
     >
       <header class="execution-error-header">
         <h2 id="execution-error-title">
           Erreur d’exécution
         </h2>
-
-        <button
-          class="execution-error-close"
-          type="button"
-          onclick={closeExecutionErrorDialog}
-          aria-label="Fermer"
-        >
-          ×
-        </button>
       </header>
 
       <div class="execution-error-content">
@@ -750,27 +744,16 @@
       </div>
 
       <footer class="execution-error-footer">
-        <button
-          class="execution-error-ok"
-          type="button"
-          onclick={closeExecutionErrorDialog}
-        >
+        <Button variant="red" onclick={closeExecutionErrorDialog}>
           Compris
-        </button>
+        </Button>
       </footer>
     </dialog>
   </div>
 {/if}
 {#if successDialog}
-  <div
-    class="success-dialog-backdrop"
-    role="presentation"
-  >
-    <dialog
-      class="dialog success-dialog"
-      open
-      aria-labelledby="success-dialog-title"
-    >
+  <div class="dialog-backdrop">
+    <dialog class="dialog success-dialog" open>
       <header class="success-dialog-header">
         <div class="success-icon">✓</div>
 
@@ -1176,7 +1159,7 @@ h2 {
     flex-wrap: wrap;
   }
 
-.execution-error-backdrop {
+.dialog-backdrop {
   position: fixed;
   inset: 0;
   z-index: 1000;
@@ -1198,8 +1181,7 @@ h2 {
 }
 
 .execution-error-dialog {
-
-  width: min(520px, calc(100vw - 2rem));
+  width: 30rem;
 
   border: 3px solid #ef4444;
   border-radius: 22px;
@@ -1230,27 +1212,6 @@ h2 {
   color: #7f1d1d;
 }
 
-.execution-error-close {
-  width: 2rem;
-  height: 2rem;
-
-  border: none;
-  border-radius: 999px;
-
-  background: rgb(255 255 255 / 0.65);
-  color: #7f1d1d;
-
-  font-size: 1.4rem;
-  font-weight: 900;
-  line-height: 1;
-
-  cursor: pointer;
-}
-
-.execution-error-close:hover {
-  background: white;
-}
-
 .execution-error-content {
   padding: 1.25rem;
   font-size: 1rem;
@@ -1270,27 +1231,6 @@ h2 {
   border-top: 1px solid rgb(239 68 68 / 0.25);
 }
 
-.execution-error-ok {
-  padding: 0.6rem 1rem;
-
-  border: 2px solid #ef4444;
-  border-radius: 999px;
-
-  background: linear-gradient(135deg, #fee2e2, #fca5a5);
-  color: #7f1d1d;
-
-  font-weight: 800;
-  cursor: pointer;
-
-  box-shadow:
-    inset 0 -3px 0 rgb(0 0 0 / 0.12),
-    0 4px 10px rgb(239 68 68 / 0.22);
-}
-
-.execution-error-ok:hover {
-  filter: brightness(1.03);
-}
-
 @keyframes dialog-pop {
   from {
     opacity: 0;
@@ -1301,18 +1241,6 @@ h2 {
     opacity: 1;
     transform: translate(-50%, -50%) translateY(0);
   }
-}
-
-.success-dialog-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-
-  display: grid;
-  place-items: center;
-
-  background: rgb(15 23 42 / 0.55);
-  backdrop-filter: blur(3px);
 }
 
 .success-dialog {

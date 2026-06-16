@@ -22,9 +22,9 @@ export const LEVELS: Level[] = [
   { 
     id: "permutations",
     title: "Permutations",
-    input: [9, 6, 7, 12, 0, 15],
+    input: [9, 6, 7, 12, 0, 15, -9, 3],
     registers: [null, null, null],
-    expectedOutput: [6, 9, 12, 7, 15, 0],
+    expectedOutput: [6, 9, 12, 7, 15, 0, 3, -9],
     palette: ["input", "output", "copy-from", "copy-to", "jump"],
     objective: "Prends les deux premiers valeurs de l'INPUT et place les dans l'OUTPUT dans le sens inverse. Repétez jusqu'à ce que l'INPUT soit vide."
   },
@@ -50,8 +50,8 @@ export const LEVELS: Level[] = [
     id: "additions",
     title: "Additions",
     registers: [null, null, null],
-    input: [10, 5, 8, 14, 5, 3],
-    expectedOutput: [15, 22, 8],
+    input: [10, 5, -8, 14, 5, 3, 6, -18],
+    expectedOutput: [15, 6, 8, -12],
     palette: ["input", "output", "copy-from", "copy-to", "add", "jump" ],
     objective: "Pour chaque paire d'éléments de l'INPUT, ajoute les et place le résultat dans l'OUTPUT."
   },
@@ -154,13 +154,22 @@ export const LEVELS: Level[] = [
     palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],
     objective: "Pour chaque paire d'élément de l’INPUT, produis la division entière du premier par le second et place la dans l'OUTPUT. Place ensuite le reste de la division dans l'OUTPUT. Les éléments sont toujours positifs."
   },
-    {
+  {
     id: "primality",
     title: "Primalité",
     registers: [null, null, null, null, null, null, null, 0],
-    input: [5, 4, 6, 7, 13, 9, 17],
-    expectedOutput: [5, 2, 4, 0, 4, 3],
+    input: [5, 4, 6, 7, -2, 13, 1, 9, 17],
+    expectedOutput: [5, 7, 13, 17],
     palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],
     objective: "Pour chaque élément de l’INPUT, place le dans l'OUTPUT seulement si il est premier. Sinon rejette le. Un nombre est premier seulement si il est supérieur ou égal à 2 et ses seuls diviseurs sont 1 et lui même."
+  },
+  {
+    id: "prime-factors",
+    title: "Facteurs premiers",
+    registers: [null, null, null, null, null, null, null, 0],
+    input: [9, 12, 7, 35],
+    expectedOutput: [3, 3, 2, 2, 3, 7, 5, 7],
+    palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],
+    objective: "Pour chaque élément de l’INPUT, place dans l'OUTPUT une séquence de nombres premiers dont le produit est l'élément. Ces nombres doivent être placés dans l'ordre croissant."
   }
 ]

@@ -64,6 +64,7 @@
   }
 
   function handleTrashDrop(state: DragDropState<DraggedBlock>) {
+    draggingSource = null;
     removeBlock(state.draggedItem) && startLayoutAnimation();
   }
 
@@ -318,7 +319,7 @@
     background: #fee2e2;
   }
 
-  .trash-drop-zone:global(.drag-over) {
+  .trash-drop-zone.trash-visible:global(.drag-over) {
     color: #450a0a;
     border-color: #ef4444;
     background: #fecaca;
@@ -387,6 +388,10 @@
     background: white;
     display: grid;
     place-items: center;
+  }
+
+  .empty-drop-zone:global(.drag-over) {
+    height: 6rem;
   }
 
   .end-drop-zone {
