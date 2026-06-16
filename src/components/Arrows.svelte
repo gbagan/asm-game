@@ -2,6 +2,17 @@
   import { tick } from "svelte";
   import { isJumpBlock, type ProgramBlock } from "../lib/types";
 
+  const COLORS = [
+    "rgb(59, 130, 246)",  // bleu
+    "rgb(239, 68, 68)",   // rouge
+    "rgb(34, 197, 94)",   // vert
+    "rgb(249, 115, 22)",  // orange
+    "rgb(234, 179, 8)",   // jaune doré
+    "rgb(20, 184, 166)",  // turquoise
+    "rgb(139, 92, 246)",  // violet
+    "rgb(236, 72, 153)",  // rose
+  ];
+
   type Props = {
     program: ProgramBlock[];
     container?: HTMLDivElement;
@@ -122,26 +133,28 @@
   viewBox={`0 0 ${width} ${height}`}
 >
   <defs>
-    <marker
-      id="arrow-head"
-      markerWidth="10"
-      markerHeight="10"
-      refX="8"
-      refY="3"
-      orient="auto"
-      markerUnits="strokeWidth"
-    >
-      <path d="M0,0 L0,6 L9,3 z" fill="var(--jump-border)"/>
-    </marker>
+    {#each COLORS as color, i}
+      <marker
+        id="arrow-head-{i}"
+        markerWidth="10"
+        markerHeight="10"
+        refX="8"
+        refY="3"
+        orient="auto"
+        markerUnits="strokeWidth"
+      >
+        <path d="M0,0 L0,6 L9,3 z" fill={color}/>
+      </marker>
+    {/each}
   </defs>
 
-  {#each arrows as arrow}
+  {#each arrows as arrow, i}
     <path
       d={pathFor(arrow)}
       fill="none"
-      stroke="var(--jump-border)"
+      stroke={COLORS[i % COLORS.length]}
       stroke-width="4"
-      marker-end="url(#arrow-head)"
+      marker-end="url(#arrow-head-{i % COLORS.length})"
     />
   {/each}
 </svg>

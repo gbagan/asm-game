@@ -128,9 +128,18 @@ export const LEVELS: Level[] = [
     objective: "Pour chaque élément de l’INPUT, produis la suite qui le ramène progressivement à ZERO et place tous les nombres obtenus dans l’OUTPUT. Si le nombre est positif, compte à rebours jusqu’à ZERO. S’il est négatif, compte dans l’autre sens jusqu’à ZERO."
   },
   {
+    id: "min-max2",
+    title: "Minimum et maximum II",
+    registers: [null, null, null, null, null, null, null, null],
+    input: [6, -4, 0, 6, -7, 8, 1, 10, -13, 6, 18],
+    expectedOutput: [-7, 8],
+    palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],
+    objective: "Le premier élément de l'INPUT indique le nombre n. Lis ensuite les n éléments suivants, trouve parmi eux le minimum et le maximum et place les dans l'OUTPUT. Ignore les éléments restants de l'INBOX."
+  },
+  {
     id: "multiplication",
     title: "Multiplication",
-    registers: [null, null, null, null],
+    registers: [null, null, null, null, null, null, null, 0 ],
     input: [2, 4, 7, 3, 5, 17],
     expectedOutput: [8, 21, 85],
     palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],
@@ -139,7 +148,7 @@ export const LEVELS: Level[] = [
   {
     id: "parity",
     title: "Parité",
-    registers: [null, null, null, null],
+    registers: [null, null, null, null, null, null, null, 0],
     input: [2, 3, -12, 7, 8, 13, 0, 10],
     expectedOutput: [2, 8, 0, 10],
     palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],
@@ -148,7 +157,7 @@ export const LEVELS: Level[] = [
   {
     id: "euclidean",
     title: "Division euclidienne",
-    registers: [null, null, null, null],
+    registers: [null, null, null, null, null, null, null, 0],
     input: [17, 3, 8, 2, 19, 4],
     expectedOutput: [5, 2, 4, 0, 4, 3],
     palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],

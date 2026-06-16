@@ -544,9 +544,7 @@
   }
 
   function isSuccess() {
-    let input = inputTokens();
-    let output = outputTokens();
-    return input.length === 0 && output.length === expectedOutput.length;
+    return outputTokens().length === expectedOutput.length;
   }
 
   async function step() {
