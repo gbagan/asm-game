@@ -30,7 +30,7 @@ export const LEVELS: Level[] = [
     registers: [null, null, null],
     expectedOutput: [6, 9, 12, 7, 15, 0, 3, -9],
     palette: ["input", "output", "copy-from", "copy-to", "jump"],
-    objective: "Prends les deux premières valeurs de l'INPUT et place les dans l'OUTPUT dans le sens inverse. Repétez jusqu'à ce que l'INPUT soit vide.",
+    objective: "Prends les deux premières valeurs de l'INPUT et place les dans l'OUTPUT dans le sens inverse. Répète jusqu'à ce que l'INPUT soit vide.",
     tests: [
       [range(0, 30), times(30, i => i ^ 1), 150] 
     ]
@@ -42,7 +42,7 @@ export const LEVELS: Level[] = [
     input: [4, 0, 8, -3, 0, 0, 5, 0],
     expectedOutput: [4, 8, -3, 5],
     palette: ["input", "output", "jump", "jump-if-zero" ],
-    objective: "Pour chaque valeur de l'INPUT, place le dans l'OUTPUT si elle est différente de ZERO. Sinon rejette le.",
+    objective: "Pour chaque valeur de l'INPUT, place la dans l'OUTPUT si elle est différente de ZERO. Sinon rejette la.",
     tests: [
       [[0, 3, 0, 4, 6, 0], [3, 4, 6], 50],
     ]
@@ -54,7 +54,7 @@ export const LEVELS: Level[] = [
     input: [4, 6, -8, -3, 0, 4, -5, 8],
     expectedOutput: [-8, -3, 0, -5],
     palette: ["input", "output", "jump", "jump-if-zero", "jump-if-negative" ],
-    objective: "Pour chaque valeur de l'INPUT, place la dans l'OUTPUT s'elle est négative ou nulle. Sinon rejette le.",
+    objective: "Pour chaque valeur de l'INPUT, place la dans l'OUTPUT s'elle est négative ou nulle. Sinon rejette la.",
       tests: [
       [[-5, 3, 0, 4, -8, -9], [-5, 0, -8, -9], 50],
     ]
