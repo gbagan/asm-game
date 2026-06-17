@@ -8,6 +8,7 @@ export function checkProgramRun(program: ProgramBlock[], initRegisters: (number 
   let outputIndex = 0;
   let programCounter = 0;
   let currentValue: number | null = null;
+  let stepCount = 0;
 
   function registerIndex(block: InstructionBlock) {
     const index = block.register!;
@@ -29,10 +30,12 @@ export function checkProgramRun(program: ProgramBlock[], initRegisters: (number 
   try {
     while (true) {
       if (programCounter >= program.length) return false;
-      console.log(programCounter, registers, currentValue, input[inputIndex], outputIndex);
+      if (stepCount > maxSteps) return false;
+      // console.log(programCounter, registers, currentValue, input[inputIndex], outputIndex);
       const block = program[programCounter];
       if (block.kind === "jump-target") {
         programCounter += 1;
+        stepCount -= 1;
       } else if (block.type === "input") {
         if (inputIndex >= input.length) {
           return false;
@@ -92,7 +95,8 @@ export function checkProgramRun(program: ProgramBlock[], initRegisters: (number 
         programCounter = currentValue < 0 ? target(block) : programCounter + 1;
       } else {
         throw new Error("unreachable");
-      } 
+      }
+      stepCount += 1;
     }
   } catch (e) {
     return false;

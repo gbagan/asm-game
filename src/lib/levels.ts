@@ -9,7 +9,7 @@ export const LEVELS: Level[] = [
     registers: [],
     expectedOutput: [10, 5, 8],
     palette: ["input", "output" ],
-    objective: "Place chaque élémént de l'INPUT dans l'OUTPUT."
+    objective: "Place chaque valeur de l'INPUT dans l'OUTPUT."
   },
   {  
     id: "loop",
@@ -18,7 +18,7 @@ export const LEVELS: Level[] = [
     registers: [],
     expectedOutput: [10, 5, 8, -3, 6, 2, 9, 1],
     palette: ["input", "output", "jump" ],
-    objective: "Place chaque élémént de l'INPUT dans l'OUTPUT. Essaie de le faire en utilisant juste 3 instructions.",
+    objective: "Place chaque valeur de l'INPUT dans l'OUTPUT. Essaie de le faire en utilisant juste 3 instructions.",
     tests: [
       [range(0, 40), range(0, 40), 200]
     ]
@@ -30,7 +30,7 @@ export const LEVELS: Level[] = [
     registers: [null, null, null],
     expectedOutput: [6, 9, 12, 7, 15, 0, 3, -9],
     palette: ["input", "output", "copy-from", "copy-to", "jump"],
-    objective: "Prends les deux premiers valeurs de l'INPUT et place les dans l'OUTPUT dans le sens inverse. Repétez jusqu'à ce que l'INPUT soit vide.",
+    objective: "Prends les deux premières valeurs de l'INPUT et place les dans l'OUTPUT dans le sens inverse. Repétez jusqu'à ce que l'INPUT soit vide.",
     tests: [
       [range(0, 30), times(30, i => i ^ 1), 150] 
     ]
@@ -42,7 +42,7 @@ export const LEVELS: Level[] = [
     input: [4, 0, 8, -3, 0, 0, 5, 0],
     expectedOutput: [4, 8, -3, 5],
     palette: ["input", "output", "jump", "jump-if-zero" ],
-    objective: "Pour chaque élément de l'INPUT, place le dans l'OUTPUT s'il est différent de ZERO. Sinon rejette le.",
+    objective: "Pour chaque valeur de l'INPUT, place le dans l'OUTPUT si elle est différente de ZERO. Sinon rejette le.",
     tests: [
       [[0, 3, 0, 4, 6, 0], [3, 4, 6], 50],
     ]
@@ -54,7 +54,7 @@ export const LEVELS: Level[] = [
     input: [4, 6, -8, -3, 0, 4, -5, 8],
     expectedOutput: [-8, -3, 0, -5],
     palette: ["input", "output", "jump", "jump-if-zero", "jump-if-negative" ],
-    objective: "Pour chaque élément de l'INPUT, place le dans l'OUTPUT s'il est négatif ou nul. Sinon rejette le.",
+    objective: "Pour chaque valeur de l'INPUT, place la dans l'OUTPUT s'elle est négative ou nulle. Sinon rejette le.",
       tests: [
       [[-5, 3, 0, 4, -8, -9], [-5, 0, -8, -9], 50],
     ]
@@ -66,7 +66,7 @@ export const LEVELS: Level[] = [
     input: [10, 5, -8, 14, 5, 3, 6, -18],
     expectedOutput: [15, 6, 8, -12],
     palette: ["input", "output", "copy-from", "copy-to", "add", "jump" ],
-    objective: "Pour chaque paire d'éléments de l'INPUT, ajoute les et place le résultat dans l'OUTPUT."
+    objective: "Pour chaque paire de valeurs de l'INPUT, ajoute les et place le résultat dans l'OUTPUT."
   },
   {
     id: "tripler",
@@ -75,7 +75,7 @@ export const LEVELS: Level[] = [
     input: [3, -7, 5, 0],
     expectedOutput: [9, -21, 15, 0],
     palette: ["input", "output", "copy-from", "copy-to", "add", "jump" ],
-    objective: "Pour chaque élément de l'INPUT, triple le et place le résultat dans l'OUTPUT."
+    objective: "Pour chaque valeur de l'INPUT, triple la et place la résultat dans l'OUTPUT."
   },
   {
     id: "octupler",
@@ -84,7 +84,7 @@ export const LEVELS: Level[] = [
     input: [4, -6, 0, 8],
     expectedOutput: [32, -48, 0, 64],
     palette: ["input", "output", "copy-from", "copy-to", "add", "jump" ],
-    objective: "Pour chaque élément de l'INPUT, multiplie le par 8 et place le résultat dans l'OUTPUT."
+    objective: "Pour chaque valeur de l'INPUT, multiplie la par 8 et place le résultat dans l'OUTPUT."
   },
   {
     id: "mult40",
@@ -93,16 +93,16 @@ export const LEVELS: Level[] = [
     input: [4, -6, 0, 8],
     expectedOutput: [32, -48, 0, 64],
     palette: ["input", "output", "copy-from", "copy-to", "add", "jump" ],
-    objective: "Pour chaque élément de l'INPUT, multiplie le par 40 et place le résultat dans l'OUTPUT."
+    objective: "Pour chaque valeur de l'INPUT, multiplie la par 40 et place le résultat dans l'OUTPUT."
   },
   {
     id: "subtract",
     title: "Soustraction",
-    registers: [null, null, null, null, null, null, null, null],
+    registers: [null, null, null, null],
     input: [5, 4, 8, -3, 2, 7, 6, 2],
     expectedOutput: [1, -1, 11, -11, -5, 5, 4, -4],
     palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "jump", "jump-if-zero" ],
-    objective: "Pour chaque paire d'éléments de l'INPUT, envoie dans l'OUTPUT le premier auquel est soustrait le second puis le second auquel est soustrait le premier",
+    objective: "Pour chaque paire de valeurs de l'INPUT, envoie dans l'OUTPUT la première auquel est soustrait la seconde puis le second auquel est soustrait le premier",
   },
   {
     id: "equality",
@@ -111,7 +111,7 @@ export const LEVELS: Level[] = [
     input: [5, 4, 6, 6, 2, 7, -9, 9, 4, 4],
     expectedOutput: [6, 4],
     palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "jump", "jump-if-zero" ],
-    objective: "Pour chaque paire d'éléments de l'INPUT, envoie dans l'OUTPUT un de ces éléments si ils sont égaux et rejette les deux sinon."
+    objective: "Pour chaque paire de valeurs de l'INPUT, envoie dans l'OUTPUT un de ces éléments si ils sont égaux et rejette les deux sinon."
   },
   {
     id: "absolute",
@@ -156,7 +156,22 @@ export const LEVELS: Level[] = [
     input: [2, 3, -12, 7, 8, 13, 0, 10],
     expectedOutput: [2, 8, 0, 10],
     palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],
-    objective: "Pour chaque élément de l’INPUT, place le dans l'OUTPUT si il positif et pair (0 compris). Sinone rejette le."
+    objective: "Pour chaque valeur de l’INPUT, place la dans l'OUTPUT si il positif et pair (0 compris). Sinone rejette la.",
+    tests: [
+      [[-3, 0, 2, 5, 7, 8], [0, 2, 8], 250],
+    ]
+  },
+  {
+    id: "fibonacci",
+    title: "Fibonacci",
+    registers: [null, null, null, null, null, null, null, null, null, 0 ],
+    input: [3, 5, 10, 1, 12, 0],
+    expectedOutput: [2, 5, 55, 1, 144, 0],
+    palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],
+    objective: "La suite de Fibonacci commence par 0 et 1. Chaque terme suivant est obtenu en additionnant les deux termes précédents. Pour chaque valeur n de l’INPUT, écris dans l’OUTPUT le n-ième terme de la suite de Fibonacci, les termes étant numérotés à partir de 0.",
+    tests: [
+      [[4, 0, 1, 6, 15], [3, 0, 1, 8, 610], 400]
+    ]
   },
   {
     id: "multiplication",
@@ -183,7 +198,7 @@ export const LEVELS: Level[] = [
     input: [5, 4, 6, 7, -2, 13, 1, 9, 17],
     expectedOutput: [5, 7, 13, 17],
     palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],
-    objective: "Pour chaque élément de l’INPUT, place le dans l'OUTPUT seulement si il est premier. Sinon rejette le. Un nombre est premier seulement si il est supérieur ou égal à 2 et ses seuls diviseurs sont 1 et lui même."
+    objective: "Pour chaque valeur de l’INPUT, place la dans l'OUTPUT seulement si c'est un nombre premier. Sinon rejette la. Un nombre est premier si il est supérieur ou égal à 2 et ses seuls diviseurs sont 1 et lui même."
   },
   {
     id: "prime-factors",
@@ -201,8 +216,11 @@ export const LEVELS: Level[] = [
     input: [8, 3, 17, -35, 4, 8, 72, -5, 0, 10, 23],
     expectedOutput: [-5, 72, 8, 4, -35, 17, 3, 8],
     palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],
-    objective: "Récupère les éléments de l’INPUT jusqu’au premier 0, sans inclure ce 0. Ignore le reste, puis place les éléments récupérés dans l’OUTPUT en ordre inverse. Il y a au plus 10 élément avant le 0",
-    allowIndirect: true
+    objective: "Récupère les éléments de l’INPUT jusqu’au premier 0, sans inclure ce 0. Ignore le reste, puis place les éléments récupérés dans l’OUTPUT en ordre inverse. Il y a au plus 10 éléments avant le 0",
+    allowIndirect: true,
+    tests: [
+      [range(10, -1, -1), range(1, 11), 100]
+    ]
   },
   {
     id: "sequence-sorting",
@@ -211,7 +229,7 @@ export const LEVELS: Level[] = [
     input: [8, 3, 17, -35, 4, 8, 72, -5, 0, 10, 23],
     expectedOutput: [-35, -5, 3, 4, 8, 8, 17, 72],
     palette: ["input", "output", "copy-from", "copy-to", "add", "sub", "inc", "dec", "jump", "jump-if-zero", "jump-if-negative" ],
-    objective: "Récupère les éléments de l’INPUT jusqu’au premier 0, sans inclure ce 0. Ignore le reste, puis place les éléments récupérés dans l’OUTPUT en ordre croissant. Il y a au plus 10 élément avant le 0",
+    objective: "Récupère les éléments de l’INPUT jusqu’au premier 0, sans inclure ce 0. Ignore le reste, puis place les éléments récupérés dans l’OUTPUT en ordre croissant. Il y a au plus 10 éléments avant le 0",
     allowIndirect: true
   }
 ]
