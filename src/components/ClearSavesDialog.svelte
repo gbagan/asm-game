@@ -47,9 +47,9 @@
     width: 40rem;
     padding: 1.5rem;
 
-    border: 3px solid #fca5a5;
-    background: linear-gradient(135deg, #fff7ed, #fee2e2);
-    color: #7f1d1d;
+    border: 3px solid var(--red-300);
+    background: linear-gradient(135deg, var(--orange-50), var(--red-100));
+    color: var(--red-900);
     box-shadow: 0 18px 40px rgb(15 23 42 / 0.28);
   }
 
@@ -82,13 +82,13 @@
   }
 
   .cancel-button {
-    background: #f1f5f9;
-    color: #334155;
-    border: 2px solid #cbd5e1;
+    background: var(--slate-100);
+    color: var(--slate-700);
+    border: 2px solid var(--slate-300);
  }
 
   .danger-button {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
+    background: linear-gradient(135deg, var(--red-500), var(--red-600));
     color: white;
 
     box-shadow:

@@ -9,7 +9,7 @@
   let { objective, closeDialog }: Props = $props();
 
 </script>
-<div class="dialog-backdrop" role="presentation" onclick={closeDialog}>
+<div class="global-dialog-backdrop" role="presentation" onclick={closeDialog}>
   <dialog
     class="global-dialog objective-dialog"
     open
@@ -43,10 +43,10 @@
 <style>
   .objective-dialog {
     width: 30rem;
-    border: 3px solid #f59e0b;
+    border: 3px solid var(--amber-500);
 
-    background: linear-gradient(135deg, #fff7ed, #fffbeb);
-    color: #431407;
+    background: linear-gradient(135deg, var(--orange-50), var(--amber-50));
+    color: var(--amber-950);
 
     box-shadow:
       0 20px 50px rgb(15 23 42 / 0.35),
@@ -54,12 +54,12 @@
   }
 
   .header {
-    background: linear-gradient(135deg, #fef3c7, #fde68a);
-    border-bottom: 2px solid #f59e0b;
+    background: linear-gradient(135deg, var(--amber-100), var(--amber-200));
+    border-bottom: 2px solid var(--amber-500);
   }
 
   .header h2 {
-    color: #78350f;
+    color: var(--amber-900);
   }
 
   .footer {

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { range } from "@gbagan/utils";
+  import { range } from "@gbagan/utils";
   import { isPaletteBlock, isRegisterBlock, type DraggedBlock } from "../lib/types";
 
   const LABEL = {
@@ -194,9 +194,9 @@
     height: 2rem;
     margin-left: 1rem;
     border: 2px dashed #777;
-    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-    border-color: #94a3b8;
-    color: #334155;
+    background: linear-gradient(135deg, var(--slate-50), var(--slate-200));
+    border-color: var(--slate-400);
+    color: var(--slate-700);
   }
 
   .register-controls {
@@ -216,10 +216,9 @@
     place-items: center;
 
     border-radius: 999px;
-    border: 2px solid #cbd5e1;
-
-    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-    color: #64748b;
+    border: 2px solid var(--slate-300);
+    background: linear-gradient(135deg, var(--slate-50), var(--slate-200));
+    color: var(--slate-500);
 
     font-size: 1.35rem;
     font-weight: 900;
@@ -237,9 +236,9 @@
   }
 
   .indirect-button.indirect-enabled {
-    border-color: #f59e0b;
-    background: linear-gradient(135deg, #fef3c7, #fbbf24);
-    color: #78350f;
+    border-color: var(--amber-500);
+    background: linear-gradient(135deg, var(--amber-100), var(--amber-400));
+    color: var(--amber-900);
 
     box-shadow:
       inset 0 -3px 0 rgb(0 0 0 / 0.12),
@@ -256,7 +255,7 @@
     width: max-content;
     padding: 0.35rem 0.55rem;
     border-radius: 10px;
-    background: #0f172a;
+    background: var(--slate-900);
     color: white;
     font-size: 0.75rem;
     font-weight: 800;
@@ -277,7 +276,7 @@
     transform: translateX(-50%);
     border-width: 5px;
     border-style: solid;
-    border-color: #0f172a transparent transparent transparent;
+    border-color: var(--slate-900) transparent transparent transparent;
   }
 
   .indirect-button:hover .indirect-tooltip,
@@ -334,13 +333,13 @@
     }
 
     & button:hover {
-      background: #e2e8f0;
+      background: var(--slate-200);
     }
 
     & button.selected-register {
-      border-color: #2563eb;
-      background: #dbeafe;
-      color: #1e3a8a;
+      border-color: var(--blue-600);
+      background: var(--blue-100);
+      color: var(--blue-900);
     }
   }
 </style>

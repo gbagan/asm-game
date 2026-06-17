@@ -137,7 +137,7 @@
 
 .success-stat-label {
   font-size: 0.9rem;
-  color: #166534;
+  color: var(--green-800);
   font-weight: 700;
   text-align: center;
 }
@@ -145,7 +145,7 @@
 .success-stat-value {
   font-size: 2rem;
   line-height: 1;
-  color: #14532d;
+  color: var(--green-900);
 }
 
 .success-dialog-footer {
