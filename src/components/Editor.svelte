@@ -288,7 +288,8 @@
     border: 2px solid #ddd;
     border-radius: 12px;
     padding: 1rem;
-   background: color-mix(in srgb, #f8fafc 75%, transparent);
+    background: color-mix(in srgb, #f8fafc 75%, transparent);
+    backdrop-filter: blur(2px);
   }
 
   .palette-list {
@@ -341,6 +342,7 @@
     border: 2px solid #ddd;
     border-radius: 0.7rem;
     background: color-mix(in srgb, #f8fafc 75%, transparent);
+    backdrop-filter: blur(2px);
     overflow-y: auto;
     overflow-x: hidden;
   }

@@ -46,7 +46,7 @@
     const nextArrows: Arrow[] = [];
 
     for (const block of program) {
-      if (block.kind !== "instruction" || !isJumpBlock(block) || !block.targetId) continue;
+      if (block.kind !== "instruction" || !isJumpBlock(block)) continue;
 
       const fromEl = container.querySelector<HTMLElement>(
         `[data-block-id="${block.id}"]`

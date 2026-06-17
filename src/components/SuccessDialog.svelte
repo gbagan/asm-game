@@ -60,7 +60,7 @@
 
 <style>
 .success-dialog {
-  width: 28rem;
+  width: 30rem;
 
   border: 3px solid #22c55e;
 

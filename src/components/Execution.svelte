@@ -1,7 +1,7 @@
 <script lang="ts">
   import { count, dec, filterMap, inc, sleep, update } from "@gbagan/utils";
   import { tick } from "svelte";
-  import type { InstructionBlock, LevelInfo, ProgramBlock } from "../lib/types";
+  import type { InstructionBlock, LevelInfo, ProgramBlock, RegisterBlock } from "../lib/types";
   import { playDiscardSound, playFailureSound, playStepSound, playVictorySound } from "../lib/sound";
   import Button from "./Button.svelte";
   import SuccessDialog from "./SuccessDialog.svelte";
@@ -157,10 +157,7 @@
     );
   }
 
-  function registerIndex(block: InstructionBlock) {
-    if (block.register === undefined) {
-      throw new Error("unreachable");
-    }
+  function registerIndex(block: RegisterBlock) {
     if (!block.indirect) {
       return block.register;
     }
@@ -363,7 +360,7 @@
     await discardToken(token.id);
   }
 
-  async function executeOperation(block: InstructionBlock, name: string, symbol: "+" | "-", op: (a: number, b: number) => number) {
+  async function executeOperation(block: RegisterBlock, name: string, symbol: "+" | "-", op: (a: number, b: number) => number) {
     const current = currentToken();
     const index = registerIndex(block);
     const register = registerToken(index);
@@ -406,7 +403,7 @@
 
   async function bumpRegister(instr: InstructionBlock, fn: (val: number) => number) {
     if (instr.type !== "dec" && instr.type !== "inc") {
-      throw new Error("Unreachable");
+      throw new Error("Unexpected error");
     }
 
     const index = registerIndex(instr);

@@ -81,8 +81,8 @@ export const LEVELS: Level[] = [
     id: "octupler",
     title: "Octuples",
     registers: [null, null, null],
-    input: [4, -6, 0, 8],
-    expectedOutput: [32, -48, 0, 64],
+    input: [4, -6, 0, 8, 5],
+    expectedOutput: [32, -48, 0, 64, 40],
     palette: ["input", "output", "copy-from", "copy-to", "add", "jump" ],
     objective: "Pour chaque valeur de l'INPUT, multiplie la par 8 et place le résultat dans l'OUTPUT."
   },
@@ -90,8 +90,8 @@ export const LEVELS: Level[] = [
     id: "mult40",
     title: "Multiplication par 40",
     registers: [null, null, null],
-    input: [4, -6, 0, 8],
-    expectedOutput: [32, -48, 0, 64],
+    input: [4, -2, 0, 8, 10],
+    expectedOutput: [160, -80, 0, 320, 400],
     palette: ["input", "output", "copy-from", "copy-to", "add", "jump" ],
     objective: "Pour chaque valeur de l'INPUT, multiplie la par 40 et place le résultat dans l'OUTPUT."
   },

@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { isJumpBlock, isPaletteBlock, isRegisterBlock, type DraggedBlock, type InstructionBlock,
-        type InstructionType, type LevelInfo, type PaletteBlock, type ProgramBlock } from "../lib/types";
+  import { isJumpBlock, isJumpType, isPaletteBlock, isRegisterBlock, isRegisterType, type DraggedBlock, type InstructionBlock,
+        type InstructionType, type IOType, type JumpType, type LevelInfo, type PaletteBlock, type ProgramBlock, 
+        type RegisterType} from "../lib/types";
   import { LEVELS } from "../lib/levels";
   import Button from "./Button.svelte";
   import Editor from "./Editor.svelte";
@@ -8,8 +9,7 @@
   import RetroBackground from "./RetroBackground.svelte";
   import HelpDialog from "./HelpDialog.svelte";
   import ObjectiveDialog from "./ObjectiveDialog.svelte";
-    import { checkProgramRun } from "../lib/check";
-
+  import { checkProgramRun } from "../lib/check";
 
   type Props = {
     levelId: string;
@@ -27,20 +27,25 @@
   let dialog: "objective" | "help" | null = $state.raw(null);
   let programCounter: number | null = $state.raw(null);
 
-  function createInstructionBlock(type: InstructionType): ProgramBlock {
-    const block: InstructionBlock = {
+  function createIOBlock(type: IOType): ProgramBlock {
+    return {
       id: crypto.randomUUID(),
       kind: "instruction",
       type
     };
-    if (isRegisterBlock(block)) {
-      const indirect = allowIndirect ? false : undefined;
-      return { ...block, register: 0, indirect };
-    }
-    return block;
   }
 
-  function createJumpPair(type: InstructionType): ProgramBlock[] {
+  function createRegisterBlock(type: RegisterType): ProgramBlock {
+    return{
+      id: crypto.randomUUID(),
+      kind: "instruction",
+      register: 0,
+      type,
+      indirect: allowIndirect ? false : undefined
+    };
+  }
+
+  function createJumpPair(type: JumpType): ProgramBlock[] {
     const jumpId = crypto.randomUUID();
     const targetId = crypto.randomUUID();
     return [
@@ -59,10 +64,12 @@
   }
 
   function createBlocksFromPalette(block: PaletteBlock): ProgramBlock[] {
-    if (isJumpBlock(block)) {
+    if (isJumpType(block.type)) {
       return createJumpPair(block.type);
-    } else { 
-      return [ createInstructionBlock(block.type) ];
+    } else if (isRegisterType(block.type)) { 
+      return [ createRegisterBlock(block.type) ];
+    } else {
+      return [ createIOBlock(block.type) ];
     }
   }
 
@@ -90,15 +97,14 @@
     return true;
   }
 
-
-
   function removeBlock(item: DraggedBlock) {
     if (isPaletteBlock(item)) return false;
 
     // Si on supprime un jump, on supprime aussi sa cible.
     if (item.kind === "instruction") {
+      const isJump = isJumpBlock(item);
       program = program.filter(b =>
-        b.id !== item.id && b.id !== item.targetId
+        b.id !== item.id && (!isJump || b.id !== item.targetId)
       );
       return true;
     } else if (item.kind === "jump-target") {

@@ -1,4 +1,4 @@
-import { type InstructionBlock, type ProgramBlock } from "./types";
+import { type InstructionBlock, type JumpBlock, type ProgramBlock, type RegisterBlock } from "./types";
 
 export function checkProgramRun(program: ProgramBlock[], initRegisters: (number | null)[],
   input: number[], expectedOutput: number[], maxSteps: number)
@@ -10,20 +10,21 @@ export function checkProgramRun(program: ProgramBlock[], initRegisters: (number 
   let currentValue: number | null = null;
   let stepCount = 0;
 
-  function registerIndex(block: InstructionBlock) {
-    const index = block.register!;
+  function registerIndex(block: RegisterBlock) {
+    const index = block.register;
     if (!block.indirect) {
       return index
-    } else if (index < 0 || index >= registers.length) {
+    }
+    if (index < 0 || index >= registers.length) {
       throw new Error();
     }
     if (registers[index] === null) {
       throw new Error();
-    } 
+    }
     return registers[index];
   }
 
-  function target(block: InstructionBlock) {
+  function target(block: JumpBlock) {
     return program.findIndex(b => b.id === block.targetId);
   }
 
