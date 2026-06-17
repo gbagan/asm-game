@@ -202,16 +202,16 @@
   }
 
   .level-button {
-    width: 10rem;
+    width: 11rem;
     padding: 0.75rem 0.85rem;
 
     display: grid;
     gap: 0.2rem;
 
-    border: 2px solid #cbd5e1;
+    border: 2px solid var(--slate-300);
     border-radius: 1rem;
-    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-    color: #334155;
+    background: linear-gradient(135deg, var(--slate-50), var(--slate-200));
+    color: var(--slate-700);
 
     cursor: pointer;
     text-align: left;
@@ -236,9 +236,9 @@
   }
 
   .level-button.selected {
-    border-color: #3b82f6;
-    background: linear-gradient(135deg, #dbeafe, #93c5fd);
-    color: #1e3a8a;
+    border-color: var(--blue-500);
+    background: linear-gradient(135deg, var(--blue-100), var(--blue-300));
+    color: var(--blue-900);
   }
 
   .level-title {
@@ -272,15 +272,15 @@
   }
 
   .level-status.completed {
-    border: 2px solid #22c55e;
-    background: linear-gradient(135deg, #dcfce7, #86efac);
-    color: #14532d;
+    border: 2px solid var(--green-500);
+    background: linear-gradient(135deg, var(--green-100), var(--green-300));
+    color: var(--green-900);
   }
 
   .level-status.not-completed {
-    border: 2px solid #94a3b8;
-    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-    color: #64748b;
+    border: 2px solid var(--slate-400);
+    background: linear-gradient(135deg, var(--slate-50), var(--slate-200));
+    color: var(--slate-500);
   }
 
   .palette-row {
@@ -331,22 +331,22 @@
 
   .objective-card p {
     line-height: 1.5;
-    color: #334155;
+    color: var(--slate-700);
   }
 
-.record-preview-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.75rem;
-}
+  .record-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
 
   .record-preview {
     padding: 0.85rem;
 
-    border-radius: 16px;
-    border: 2px solid #cbd5e1;
+    border-radius: 0.9rem;
+    border: 2px solid  var(--slate-300);
 
-    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    background: linear-gradient(135deg,  var(--slate-50),  var(--slate-200));
 
     display: grid;
     justify-items: center;
@@ -355,6 +355,13 @@
     box-shadow:
       inset 0 -3px 0 rgb(0 0 0 / 0.06),
       0 4px 10px rgb(15 23 42 / 0.08);
+  
+    & strong {
+      font-size: 1.8rem;
+      line-height: 1;
+      color: var(--slate-800);
+      font-weight: 800;
+    }
   }
 
   .record-icon {
@@ -363,14 +370,8 @@
 
   .record-label {
     font-size: 0.8rem;
-    color: #475569;
+    color: var(--slate-600);
     font-weight: 800;
-  }
-
-  .record-preview strong {
-    font-size: 1.8rem;
-    line-height: 1;
-    color: #1e293b;
   }
 
   .indirection-badge {
@@ -380,17 +381,16 @@
     width: fit-content;
     padding: 0.3rem 0.6rem;
     border-radius: 999px;
-    background: #f1f5f9;
-    border: 1px solid #cbd5e1;
-    color: #64748b;
+    background: var(--slate-100);
+    border: 1px solid var(--slate-300);
+    color: var(--slate-500);
     font-size: 0.8rem;
     font-weight: 900;
-  }
-
-  .indirection-badge.enabled {
-    background: #fef3c7;
-    border-color: #f59e0b;
-    color: #78350f;
+    &.enabled { 
+      background: var(--amber-100);
+      border-color: var(--amber-500);
+      color: var(--amber-900);
+    }
   }
 
   .clear-saves-button {
@@ -402,11 +402,11 @@
     width: 3.5rem;
     height: 3.5rem;
 
-    border: 2px solid #fecaca;
+    border: 2px solid var(--red-200);
     border-radius: 16px;
 
-    background: linear-gradient(135deg, #fee2e2, #fecaca);
-    color: #991b1b;
+    background: linear-gradient(135deg, var(--red-100), var(--red-200));
+    color: var(--red-800);
 
     font-size: 2rem;
     font-weight: 900;
@@ -420,6 +420,6 @@
 
   .clear-saves-button:hover {
     transform: translateY(-1px);
-    background: linear-gradient(135deg, #fecaca, #fca5a5);
+    background: linear-gradient(135deg, var(--red-200), var(--red-300));
   }
 </style>
