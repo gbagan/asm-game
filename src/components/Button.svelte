@@ -71,34 +71,34 @@
   }
 
   button.button-green {
-    --button-bg: #dcfce7;
-    --button-bg-2: #86efac;
-    --button-border: #22c55e;
-    --button-text: #14532d;
-    --button-shadow: rgb(34 197 94 / 0.28);
+    --button-bg: var(--green-100);
+    --button-bg-2: var(--green-300);
+    --button-border: var(--green-500);
+    --button-text: var(--green-900);
+    --button-shadow: color-mix(in srgb, var(--green-500) 28%, transparent);
   }
 
   button.button-yellow {
-    --button-bg: #fef3c7;
-    --button-bg-2: #fcd34d;
-    --button-border: #f59e0b;
-    --button-text: #78350f;
-    --button-shadow: rgb(245 158 11 / 0.28);
+    --button-bg: var(--amber-100);
+    --button-bg-2: var(--amber-300);
+    --button-border: var(--amber-500);
+    --button-text: var(--amber-900);
+    --button-shadow: color-mix(in srgb, var(--amber-500) 28%, transparent);
   }
 
   button.button-red {
-    --button-bg: #fee2e2;
-    --button-bg-2: #fca5a5;
-    --button-border: #ef4444;
-    --button-text: #7f1d1d;
-    --button-shadow: rgb(239 68 68 / 0.28);
+    --button-bg: var(--red-100);
+    --button-bg-2: var(--red-300);
+    --button-border: var(--red-500);
+    --button-text: var(--red-900);
+    --button-shadow: color-mix(in srgb, var(--red-500) 28%, transparent);
   }
 
   button.button-blue {
-    --button-bg: #dbeafe;
-    --button-bg-2: #93c5fd;
-    --button-border: #3b82f6;
-    --button-text: #1e3a8a;
-    --button-shadow: rgb(59 130 246 / 0.28);
+    --button-bg: var(--blue-100);
+    --button-bg-2: var(--blue-300);
+    --button-border: var(--blue-500);
+    --button-text: var(--blue-900);
+    --button-shadow: color-mix(in srgb, var(--blue-500) 28%, transparent);
   }
 </style>

@@ -8,6 +8,7 @@
   import RetroBackground from "./RetroBackground.svelte";
   import HelpDialog from "./HelpDialog.svelte";
   import ObjectiveDialog from "./ObjectiveDialog.svelte";
+    import { checkProgramRun } from "../lib/check";
 
 
   type Props = {
@@ -19,7 +20,8 @@
 
   let { levelId, levelInfo, saveInfo, onQuitLevel }: Props = $props();
 
-  let { input, palette, registers, objective, expectedOutput, allowIndirect: indirectMode } = $derived(LEVELS.find(lvl => lvl.id === levelId)!);
+  let { input, palette, registers, objective, expectedOutput, allowIndirect, tests } = 
+    $derived(LEVELS.find(lvl => lvl.id === levelId)!);
 
   let program = $derived(levelInfo.program);
   let dialog: "objective" | "help" | null = $state.raw(null);
@@ -32,7 +34,7 @@
       type
     };
     if (isRegisterBlock(block)) {
-      const indirect = indirectMode ? false : undefined;
+      const indirect = allowIndirect ? false : undefined;
       return { ...block, register: 0, indirect };
     }
     return block;
@@ -146,6 +148,11 @@
     onQuitLevel();
   }
 
+  function checkTests() {
+    return !tests || tests.every(([input, expectedOutput, maxSteps]) =>
+      checkProgramRun(program, registers, input, expectedOutput, maxSteps)
+    )
+  }
 </script>
 
 <RetroBackground />
@@ -160,6 +167,7 @@
       {setProgramCounter}
       {saveInfo}
       {onQuitLevel}
+      {checkTests}
     />
     <div>
       <div class="editor-topbar">

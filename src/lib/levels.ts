@@ -1,4 +1,4 @@
-import { arrayOf } from "@gbagan/utils"
+import { arrayOf, range, times } from "@gbagan/utils"
 import type { Level } from "./types"
 
 export const LEVELS: Level[] = [ 
@@ -18,7 +18,10 @@ export const LEVELS: Level[] = [
     registers: [],
     expectedOutput: [10, 5, 8, -3, 6, 2, 9, 1],
     palette: ["input", "output", "jump" ],
-    objective: "Place chaque élémént de l'INPUT dans l'OUTPUT. Essaie de le faire en utilisant juste 3 instructions."
+    objective: "Place chaque élémént de l'INPUT dans l'OUTPUT. Essaie de le faire en utilisant juste 3 instructions.",
+    tests: [
+      [range(0, 40), range(0, 40), 200]
+    ]
   },
   { 
     id: "permutations",
@@ -27,7 +30,10 @@ export const LEVELS: Level[] = [
     registers: [null, null, null],
     expectedOutput: [6, 9, 12, 7, 15, 0, 3, -9],
     palette: ["input", "output", "copy-from", "copy-to", "jump"],
-    objective: "Prends les deux premiers valeurs de l'INPUT et place les dans l'OUTPUT dans le sens inverse. Repétez jusqu'à ce que l'INPUT soit vide."
+    objective: "Prends les deux premiers valeurs de l'INPUT et place les dans l'OUTPUT dans le sens inverse. Repétez jusqu'à ce que l'INPUT soit vide.",
+    tests: [
+      [range(0, 30), times(30, i => i ^ 1), 150] 
+    ]
   },
   {
     id: "zero-filter",
@@ -36,7 +42,10 @@ export const LEVELS: Level[] = [
     input: [4, 0, 8, -3, 0, 0, 5, 0],
     expectedOutput: [4, 8, -3, 5],
     palette: ["input", "output", "jump", "jump-if-zero" ],
-    objective: "Pour chaque élément de l'INPUT, place le dans l'OUTPUT s'il est différent de ZERO. Sinon rejette le."
+    objective: "Pour chaque élément de l'INPUT, place le dans l'OUTPUT s'il est différent de ZERO. Sinon rejette le.",
+    tests: [
+      [[0, 3, 0, 4, 6, 0], [3, 4, 6], 50],
+    ]
   },
   {
     id: "nonzero-filter",
@@ -45,7 +54,10 @@ export const LEVELS: Level[] = [
     input: [4, 6, -8, -3, 0, 4, -5, 8],
     expectedOutput: [-8, -3, 0, -5],
     palette: ["input", "output", "jump", "jump-if-zero", "jump-if-negative" ],
-    objective: "Pour chaque élément de l'INPUT, place le dans l'OUTPUT s'il est négatif ou nul. Sinon rejette le."
+    objective: "Pour chaque élément de l'INPUT, place le dans l'OUTPUT s'il est négatif ou nul. Sinon rejette le.",
+      tests: [
+      [[-5, 3, 0, 4, -8, -9], [-5, 0, -8, -9], 50],
+    ]
   },
   {
     id: "additions",

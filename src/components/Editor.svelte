@@ -316,15 +316,15 @@
     }
 
   .trash-drop-zone.trash-visible {
-    color: #7f1d1d;
-    border-color: #fca5a5;
-    background: #fee2e2;
+    color: var(--red-900);
+    border-color: var(--red-300);
+    background: var(--red-100);
   }
 
   .trash-drop-zone.trash-visible:global(.drag-over) {
-    color: #450a0a;
-    border-color: #ef4444;
-    background: #fecaca;
+    color: var(--red-950);
+    border-color: var(--red-500);
+    background: var(--red-200);
     transform: scale(1.05);
   }
 
@@ -375,10 +375,10 @@
 
   .between-drop-zone:global(.drag-over) {
     height: 2.5rem;
-    border-color: #3b82f6;
+    border-color: var(--blue-500);
     border-style: dashed;
     background: rgb(255 255 255 / 0.85);
-    outline: 2px dashed #4caf50;
+    outline: 2px dashed var(--green-500);
   }
 
   .empty-drop-zone {
@@ -410,7 +410,7 @@
 
   .end-drop-zone:global(.drag-over) {
     height: 3rem;
-    outline: 2px dashed #4caf50;
+    outline: 2px dashed var(--green-500);
   }
 
   :global(.drop-before::before),

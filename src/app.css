@@ -4,21 +4,21 @@
   --text: #6b6375;
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
 
-  --io-color: #78350f;
-  --io-bg: linear-gradient(135deg, #fef3c7, #fde68a);
-  --io-border: #f59e0b;
+  --io-color: var(--amber-900);
+  --io-bg: linear-gradient(135deg, var(--amber-100), var(--amber-200));
+  --io-border: var(--amber-500);
 
-  --jump-color: #0c4a6e;
-  --jump-bg: linear-gradient(135deg, #e0f2fe, #bae6fd);
-  --jump-border: #38bdf8;
+  --jump-color: var(--sky-900);
+  --jump-bg: linear-gradient(135deg, var(--sky-100), var(--sky-200));
+  --jump-border: var(--sky-400);
 
-  --mem-color: #3b0764;
-  --mem-bg: linear-gradient(135deg, #ede9fe, #ddd6fe);
-  --mem-color: #8b5cf6;
+  --mem-color: var(--purple-950);
+  --mem-bg: linear-gradient(135deg, var(--violet-100), var(--violet-200));
+  --mem-border: var(--violet-500);
 
-  --arith-color: #14532d;
-  --arith-bg: linear-gradient(135deg, #dcfce7, #bbf7d0);
-  --arith-border: #22c55e;
+  --arith-color: var(--green-900);
+  --arith-bg: linear-gradient(135deg, var(--green-100), var(--green-200));
+  --arith-border: var(--green-500);
 
 
   font: min(2vh, calc(2vw * 9 / 16)) var(--sans);

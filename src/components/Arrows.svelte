@@ -3,14 +3,14 @@
   import { isJumpBlock, type ProgramBlock } from "../lib/types";
 
   const COLORS = [
-    "rgb(59, 130, 246)",  // bleu
-    "rgb(239, 68, 68)",   // rouge
-    "rgb(34, 197, 94)",   // vert
-    "rgb(249, 115, 22)",  // orange
-    "rgb(234, 179, 8)",   // jaune doré
-    "rgb(20, 184, 166)",  // turquoise
-    "rgb(139, 92, 246)",  // violet
-    "rgb(236, 72, 153)",  // rose
+    "var(--blue-500)",
+    "var(--red-500)",
+    "var(--green-500)",
+    "var(--orange-500)",
+    "var(--amber-500)" ,
+    "var(--teal-500)",
+    "var(--violet-500)",
+    "var(--pink-500)",
   ];
 
   type Props = {

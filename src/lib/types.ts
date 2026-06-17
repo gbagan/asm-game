@@ -59,6 +59,7 @@ export type Level = {
   palette: InstructionType[];
   objective: string;
   allowIndirect?: boolean;
+  tests?: [number[], number[], number][];
 }
 
 export type LevelInfo = {

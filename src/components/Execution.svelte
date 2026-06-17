@@ -39,10 +39,11 @@
     setProgramCounter: (pc: number | null) => void;
     onQuitLevel: () => void;
     saveInfo: (fn: (info: LevelInfo) => LevelInfo) => void;
+    checkTests: () => boolean;
   };
 
   let { program, programCounter, initialInput, registers, expectedOutput,
-    setProgramCounter, onQuitLevel, saveInfo }: Props = $props();
+    setProgramCounter, onQuitLevel, saveInfo, checkTests }: Props = $props();
 
   let container: HTMLDivElement;
   let inputSlots: (HTMLDivElement | undefined)[] = $state([]);
@@ -584,11 +585,16 @@
     } catch (e) {
       playSound("failure");
       errorMessage = (e as Error).message;
-      setProgramCounter(null);
       return false;
     }
     stepCount += 1;
     if (isSuccess()) {
+      if (!checkTests()) {
+        playSound("failure");
+        errorMessage = "Ton programme est valide sur cette entrée mais ne donne pas la bonne réponse sur d'autres entrées";
+        return false;
+      }
+
       completeLevel();
       playSound("victory");
       successDialog = true;
@@ -840,8 +846,8 @@ h2 {
   .current-slot {
     width: 5rem;
     height: 5rem;
-    border: 0.25rem dashed #fb7185;
-   background: rgb(255 228 230 / 0.5);
+    border: 0.25rem dashed var(--rose-400);
+    background: color-mix(in srgb, var(--rose-100) 50%, transparent);
   }
 
   .register-slot {
@@ -849,8 +855,8 @@ h2 {
     width: 4.5rem;
     height: 4.5rem;
     border-radius: 1.1rem;
-    background: linear-gradient(135deg, #ede9fe, #ddd6fe);
-    border: 4px solid #8b5cf6;
+    background: linear-gradient(135deg, var(--violet-100), var(--violet-200));
+    border: 4px solid var(--violet-500);
   
     &.incremented {
       animation: register-increment-flash 600ms ease-out;
@@ -877,9 +883,9 @@ h2 {
       left 700ms ease-in-out,
       top 700ms ease-in-out;
 
-    background: linear-gradient(135deg, #dbeafe, #93c5fd);
-    border: 3px solid #2563eb;
-    color: #1e3a8a;
+    background: linear-gradient(135deg, var(--blue-100), var(--blue-300));
+    border: 3px solid var(--blue-600);
+    color: var(--blue-900);
 
     font-size: 1.55rem;
     font-weight: 900;
@@ -971,13 +977,13 @@ h2 {
   }
 
   .result-slot {
-    border-color: #fb7185;
-    background: rgb(255 228 230 / 0.55);
+    border-color: var(--rose-400);
+    background: color-mix(in srgb, var(--rose-100) 55%, transparent);
   }
 
   .operator {
     font-weight: 900;
-    color: #334155;
+    color: var(--slate-700);
     font-size: 1.8rem;
     line-height: 1;
   }
