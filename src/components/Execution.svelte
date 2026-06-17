@@ -1,7 +1,7 @@
 <script lang="ts">
   import { count, dec, filterMap, inc, sleep, update } from "@gbagan/utils";
   import { tick } from "svelte";
-  import type { LevelInfo, ProgramBlock } from "../lib/types";
+  import type { InstructionBlock, LevelInfo, ProgramBlock } from "../lib/types";
   import { playDiscardSound, playFailureSound, playStepSound, playVictorySound } from "../lib/sound";
   import Button from "./Button.svelte";
   import SuccessDialog from "./SuccessDialog.svelte";
@@ -150,33 +150,28 @@
     return tokens.find(token => token.location.kind === "current");
   }
 
-  function registerToken(registerIndex: number, indirect?: boolean) {
-    const token = tokens.find(token =>
+  function registerToken(registerIndex: number) {
+    return tokens.find(token =>
       token.location.kind === "register" &&
       token.location.index === registerIndex
     );
-    if (!indirect) {
-      return token;
+  }
+
+  function registerIndex(block: InstructionBlock) {
+    if (block.register === undefined) {
+      throw new Error("unreachable");
     }
+    if (!block.indirect) {
+      return block.register;
+    }
+    const token = registerToken(block.register);
     if (token === undefined) {
       throw Error("Le registre est vide");
     }
     if (token.value < 0 && token.value > registers.length) {
       throw Error("Le registre ne contient pas une addresse valide")
     }
-    return registerToken(token.value, false);
-  }
-
-  function indirectIndex(index: number, indirect?: boolean) {
-    if (!indirect) {
-      return index;
-    } else {
-      const token = tokens.find(token =>
-        token.location.kind === "register" &&
-        token.location.index === index
-      )!;
-      return token.value; 
-    }
+    return token.value; 
   }
 
   function getSlotForLocation(location: TokenLocation): HTMLElement | undefined {
@@ -361,16 +356,17 @@
     await discardToken(token.id);
   }
 
-  async function discardRegisterToken(registerIndex: number, indirect?: boolean) {
-    const token = registerToken(registerIndex, indirect);
+  async function discardRegisterToken(index: number) {
+    const token = registerToken(index);
     if (!token) return;
     playSound("discard");
     await discardToken(token.id);
   }
 
-  async function executeOperation(name: string, symbol: "+" | "-", registerIdx: number, op: (a: number, b: number) => number, indirect?: boolean) {
+  async function executeOperation(block: InstructionBlock, name: string, symbol: "+" | "-", op: (a: number, b: number) => number) {
     const current = currentToken();
-    const register = registerToken(registerIdx, indirect);
+    const index = registerIndex(block);
+    const register = registerToken(index);
 
     if (!current) throw new Error(`Tente de faire une ${name} alors que la valeur courante est vide`);
     if (!register) throw new Error(`Tente de faire une ${name} avec un registre vide`);
@@ -383,7 +379,7 @@
 
     const registerCopyId = await createToken(
       register.value,
-      { kind: "register", index: indirectIndex(registerIdx, indirect) }
+      { kind: "register", index }
     );
 
     await Promise.all([
@@ -408,15 +404,20 @@
     incrementProgramCounter();
   }
 
-  async function bumpRegister(registerIndex: number, instr: "inc" | "dec", fn: (val: number) => number, indirect?: boolean) {
-    const token = registerToken(registerIndex, indirect);
-    const index = indirectIndex(registerIndex, indirect);
+  async function bumpRegister(instr: InstructionBlock, fn: (val: number) => number) {
+    if (instr.type !== "dec" && instr.type !== "inc") {
+      throw new Error("Unreachable");
+    }
+
+    const index = registerIndex(instr);
+    const token = registerToken(index);
+   
     if (!token) {
       throw new Error("Le registre est vide")
     }
     playSound("step");
     modifyToken(token.id, fn);
-    modifiedRegister = [index, instr];
+    modifiedRegister = [index, instr.type];
     await delay(600);
     modifiedRegister = null;
     await discardCurrentToken();
@@ -470,12 +471,12 @@
       incrementProgramCounter();
     } else if (instruction.type === "copy-to") {
       const token = currentToken();
+      const index = registerIndex(instruction);
       if (!token) {
         throw new Error("Tente de copier la valeur courante alors qu'elle est vide");
       }
-      await discardRegisterToken(instruction.register!, instruction.indirect);
+      await discardRegisterToken(index);
       playSound("step");
-      const index = indirectIndex(instruction.register!, instruction.indirect);
       await createCopyAndMove(
         token.value,
         { kind: "current" },
@@ -484,14 +485,14 @@
       await delay(250);
       incrementProgramCounter();
     } else if (instruction.type === "copy-from") {
-      const token = registerToken(instruction.register!, instruction.indirect);
+      const index = registerIndex(instruction);
+      const token = registerToken(index);
       if (!token) {
         throw new Error("Tente de récupérer un registre vide");
       }
 
       await discardCurrentToken();
       playSound("step");
-      const index = indirectIndex(instruction.register!, instruction.indirect);
       await createCopyAndMove(
         token.value,
         { kind: "register", index },
@@ -500,9 +501,9 @@
       await delay(250);
       incrementProgramCounter();
     } else if (instruction.type === "add") {
-      await executeOperation("addition", "+", instruction.register!, (a, b) => a + b, instruction.indirect);
+      await executeOperation(instruction, "addition", "+", (a, b) => a + b);
     } else if (instruction.type === "sub") {
-      await executeOperation("soustraction", "-", instruction.register!, (a, b) => a - b, instruction.indirect);
+      await executeOperation(instruction, "soustraction", "-", (a, b) => a - b);
     } else if (instruction.type === "jump") {
       playSound("step");
       setProgramCounter(program.findIndex(b => b.id === instruction.targetId));
@@ -529,9 +530,9 @@
         incrementProgramCounter();  
       }
     } else if (instruction.type === "inc") {
-      await bumpRegister(instruction.register!, "inc", inc, instruction.indirect);
+      await bumpRegister(instruction, inc);
     } else if (instruction.type === "dec") {
-      await bumpRegister(instruction.register!, "dec", dec, instruction.indirect);
+      await bumpRegister(instruction, dec);
     }
       
   }
@@ -690,30 +691,30 @@
         <div class="slot calc-slot result-slot" bind:this={calcResultSlot}></div>
       </div>
 
-      <div class="registers-area">
-        <h2>Registres</h2>
-
-        <div class="register-grid">
-          {#each registers as _, index}
-            {@const isModified = modifiedRegister && modifiedRegister[0] === index}
-            <div class="register-cell">
-              <div class="register-label">{index}</div>
-              <div
-                class="slot register-slot"
-                class:incremented={isModified && modifiedRegister![1] === "inc"}
-                class:decremented={isModified && modifiedRegister![1] === "dec"}
-                bind:this={registerSlots[index]}
-              >
-                {#if isModified && modifiedRegister![1] === "inc"}
-                  <span class="modify-bubble increment-bubble">+1</span>
-                {:else if isModified && modifiedRegister![1] === "dec"}
-                  <span class="modify-bubble decrement-bubble">-1</span>
-                {/if}
+      {#if registers.length > 0}
+        <div class="registers-area">
+          <div class="register-grid">
+            {#each registers as _, index}
+              {@const isModified = modifiedRegister && modifiedRegister[0] === index}
+              <div class="register-cell">
+                <div class="register-label">{index}</div>
+                <div
+                  class="slot register-slot"
+                  class:incremented={isModified && modifiedRegister![1] === "inc"}
+                  class:decremented={isModified && modifiedRegister![1] === "dec"}
+                  bind:this={registerSlots[index]}
+                >
+                  {#if isModified && modifiedRegister![1] === "inc"}
+                    <span class="modify-bubble increment-bubble">+1</span>
+                  {:else if isModified && modifiedRegister![1] === "dec"}
+                    <span class="modify-bubble decrement-bubble">-1</span>
+                  {/if}
+                </div>
               </div>
-            </div>
-          {/each}
+            {/each}
+          </div>
         </div>
-      </div>
+      {/if}
     </section>
 
     <section class="panel output-panel">
