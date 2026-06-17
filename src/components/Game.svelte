@@ -155,6 +155,8 @@
   }
 </script>
 
+<svelte:window onpagehide={() => saveInfo(info => ({...info, program}) )} />
+
 <RetroBackground />
 <div class="screen">
   <div class="game">

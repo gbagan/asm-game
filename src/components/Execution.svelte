@@ -658,6 +658,8 @@
   }
 </script>
 
+<svelte:window onresize={updateTokenPositions} />
+
 <div class="container">
   <div class="execution-view" bind:this={container}>
     <section class="panel input-panel">
