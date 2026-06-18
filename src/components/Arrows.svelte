@@ -143,7 +143,7 @@
         orient="auto"
         markerUnits="strokeWidth"
       >
-        <path d="M0,0 L0,6 L9,3 z" fill={color}/>
+        <path d="M0,0 L0,6 L9,3 z" fill={color} />
       </marker>
     {/each}
   </defs>

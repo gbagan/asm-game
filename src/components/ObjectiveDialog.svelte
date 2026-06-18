@@ -58,6 +58,6 @@
   }
 
   .footer {
-    border-top: 1px solid rgb(245 158 11 / 0.25);
+    border-top: 1px solid color-mix(in srgb, var(--amber-500) 25%, transparent);
   }
 </style>
