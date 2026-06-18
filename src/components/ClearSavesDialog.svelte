@@ -74,7 +74,7 @@
 
   .dialog-button {
     padding: 0.7rem 1rem;
-    border-radius: 14px;
+    border-radius: 0.75rem;
     border: none;
     font-size: 0.95rem;
     font-weight: 900;
@@ -93,6 +93,6 @@
 
     box-shadow:
       inset 0 -3px 0 rgb(0 0 0 / 0.14),
-      0 5px 12px rgb(220 38 38 / 0.22);
+      0 5px 12px color-mix(in srgb, var(--red-600) 22%, transparent);
   }
 </style>

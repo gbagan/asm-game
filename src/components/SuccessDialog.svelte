@@ -61,20 +61,14 @@
 <style>
 .success-dialog {
   width: 30rem;
-
-  border: 3px solid #22c55e;
-
+  border: 3px solid var(--green-500);
   background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-  color: #14532d;
-
-  box-shadow:
-    0 20px 50px rgb(15 23 42 / 0.35),
-    inset 0 -5px 0 rgb(0 0 0 / 0.08);
+  color: var(--green-900);
 }
 
 .success-dialog-header {
   background: linear-gradient(135deg, #dcfce7, #86efac);
-  border-bottom: 2px solid #22c55e;
+  border-bottom: 2px solid var(--green-500);
 }
 
 .success-icon {
@@ -85,10 +79,10 @@
   place-items: center;
 
   border-radius: 999px;
-  border: 3px solid #22c55e;
+  border: 3px solid var(--green-500);
 
   background: white;
-  color: #15803d;
+  color: var(--green-700);
 
   font-size: 1.8rem;
   font-weight: 900;
@@ -101,12 +95,12 @@
 .success-dialog-header h2 {
   margin: 0;
   font-size: 1.5rem;
-  color: #14532d;
+  color: var(--green-900);
 }
 
 .success-dialog-header p {
   margin: 0.25rem 0 0;
-  color: #166534;
+  color:  var(--green-800);
   font-weight: 600;
 }
 
@@ -121,7 +115,7 @@
 .success-stat {
   padding: 1rem;
 
-  border-radius: 18px;
+  border-radius: 1rem;
   border: 2px solid rgb(34 197 94 / 0.35);
 
   background: rgb(255 255 255 / 0.75);

@@ -40,25 +40,20 @@
 <style>
 .execution-error-dialog {
   width: 30rem;
-
-  border: 3px solid #ef4444;
-  background: linear-gradient(135deg, #fff1f2, #fee2e2);
-  color: #450a0a;
-
-  box-shadow:
-    0 20px 50px rgb(15 23 42 / 0.35),
-    inset 0 -5px 0 rgb(0 0 0 / 0.08);
+  border: 3px solid var(--red-500);
+  background: linear-gradient(135deg, var(--rose-50), var(--red-100));
+  color: var(--red-950);
 }
 
 .execution-error-header {
-  background: linear-gradient(135deg, #fee2e2, #fca5a5);
-  border-bottom: 2px solid #ef4444;
+  background: linear-gradient(135deg, var(--red-100), var(--red-300));
+  border-bottom: 2px solid var(--red-500);
 }
 
 .execution-error-header h2 {
   margin: 0;
   font-size: 1.25rem;
-  color: #7f1d1d;
+  color: var(--red-900);
 }
 
 .execution-error-content {
@@ -73,6 +68,6 @@
 }
 
 .execution-error-footer {
-  border-top: 1px solid rgb(239 68 68 / 0.25);
+  border-top: 1px solid color-mix(in srgb, var(--red-500) 25%, transparent);
 }
 </style>

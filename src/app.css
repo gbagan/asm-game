@@ -47,10 +47,13 @@ html, body {
     position: fixed;
     left: 50%;
     top: 50%;
-    transform: translate(-50%, -50%);  
+    transform: translate(-50%, -50%);
     overflow: hidden;
     animation: global-dialog-pop 160ms ease-out;
     border-radius: 1.2rem;
+    box-shadow:
+      0 1.25rem 3rem color-mix(in srgb, var(--slate-900) 35%, transparent),
+      inset 0 -5px 0 rgb(0 0 0 / 0.08);
   }
 
   @keyframes global-dialog-pop {

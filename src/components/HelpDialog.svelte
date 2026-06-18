@@ -174,29 +174,18 @@
 <style>
   .help-dialog {
     width: 75rem;
-
-    border: 3px solid #3b82f6;
-    border-radius: 22px;
-
-    background: linear-gradient(135deg, #eff6ff, #f8fafc);
-    color: #0f172a;
-
-    box-shadow:
-      0 20px 50px rgb(15 23 42 / 0.35),
-      inset 0 -5px 0 rgb(0 0 0 / 0.08);
-
-    overflow: hidden;
-
-    animation: dialog-pop 160ms ease-out;
+    border: 3px solid var(--blue-500);
+    background: linear-gradient(135deg, var(--blue-50), var(--slate-50));
+    color: var(--slate-900);
   }
 
   .help-header {
-    background: linear-gradient(135deg, #dbeafe, #93c5fd);
-    border-bottom-color: #3b82f6;
+    background: linear-gradient(135deg, var(--blue-100), var(--blue-300));
+    border-bottom-color: var(--blue-500);
   }
 
   .help-header h2 {
-    color: #1e3a8a;
+    color: var(--blue-900);
   }
 
   .help-content {
@@ -211,9 +200,9 @@
     grid-column: 1 / -1;
     padding: 1rem 1.1rem;
     border-radius: 1rem;
-    border: 2px solid #3b82f6;
-    background: linear-gradient(135deg, #eff6ff, #dbeafe);
-    color: #1e3a8a;
+    border: 2px solid var(--blue-500);
+    background: linear-gradient(135deg, var(--blue-50), var(--blue-100));
+    color: var(--blue-900);
     box-shadow:
       inset 0 -3px 0 rgb(0 0 0 / 0.06),
       0 4px 10px rgb(15 23 42 / 0.08);
@@ -237,7 +226,7 @@
   .instruction-help {
     padding: 0.9rem 1rem;
     border-radius: 0.9rem;
-    border: 2px solid #cbd5e1;
+    border: 2px solid var(--slate-300);
     background: white;
 
     box-shadow:
@@ -291,9 +280,9 @@
   }
 
   .memory-help {
-    border-color: #8b5cf6;
-    background: linear-gradient(135deg, #ede9fe, #ddd6fe);
-    color: #3b0764;
+    border-color: var(--mem-border);
+    background: var(--mem-bg);
+    color: var(--mem-color);
   }
 
   .arithmetic-help {
@@ -305,19 +294,19 @@
   .instruction-help.disabled-help {
     filter: grayscale(1);
     opacity: 0.42;
-    background: #f1f5f9;
-    border-color: #cbd5e1;
-    color: #64748b;
+    background: var(--slate-100);
+    border-color: var(--slate-300);
+    color: var(--slate-500);
   }
 
   .instruction-help.disabled-help h3,
   .instruction-help.disabled-help p {
-    color: #64748b;
+    color: var(--slate-500);
   }
 
   .instruction-help.disabled-help .instruction-argument {
-    background: #e2e8f0;
-    border-color: #cbd5e1;
-    color: #64748b;
+    background: var(--slate-200);
+    border-color: var(--slate-300);
+    color: var(--slate-500);
   }
 </style>

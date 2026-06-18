@@ -17,11 +17,11 @@
 
 <style>
   button {
-    --button-bg: #e2e8f0;
-    --button-bg-2: #cbd5e1;
-    --button-border: #94a3b8;
-    --button-text: #0f172a;
-    --button-shadow: rgb(15 23 42 / 0.18);
+    --button-bg: var(--slate-100);
+    --button-bg-2: var(--slate-300);
+    --button-border: var(--slate-400);
+    --button-text: var(--slate-900);
+    --button-shadow: color-mix(in srgb, var(--slate-900) 18%, transparent);
 
     min-width: 8rem;
     padding: 0.75rem 1.15rem;

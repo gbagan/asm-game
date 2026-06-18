@@ -225,20 +225,20 @@
       box-shadow 120ms ease,
       border-color 120ms ease,
       filter 120ms ease;
-  }
-
-  .level-button:hover {
-    filter: brightness(1.02);
-    transform: translateY(-2px);
-    box-shadow:
-      inset 0 -3px 0 rgb(0 0 0 / 0.08),
-      0 8px 18px rgb(15 23 42 / 0.12);
-  }
-
-  .level-button.selected {
-    border-color: var(--blue-500);
-    background: linear-gradient(135deg, var(--blue-100), var(--blue-300));
-    color: var(--blue-900);
+  
+    &:hover {
+      filter: brightness(1.02);
+      transform: translateY(-2px);
+      box-shadow:
+        inset 0 -3px 0 rgb(0 0 0 / 0.08),
+        0 8px 18px rgb(15 23 42 / 0.12);
+    }
+  
+    &.selected {
+      border-color: var(--blue-500);
+      background: linear-gradient(135deg, var(--blue-100), var(--blue-300));
+      color: var(--blue-900);
+    }
   }
 
   .level-title {

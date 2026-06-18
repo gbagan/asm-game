@@ -44,13 +44,8 @@
   .objective-dialog {
     width: 30rem;
     border: 3px solid var(--amber-500);
-
     background: linear-gradient(135deg, var(--orange-50), var(--amber-50));
     color: var(--amber-950);
-
-    box-shadow:
-      0 20px 50px rgb(15 23 42 / 0.35),
-      inset 0 -5px 0 rgb(0 0 0 / 0.08);
   }
 
   .header {

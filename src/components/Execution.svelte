@@ -972,7 +972,7 @@ h2 {
   .calc-slot {
     width: 4rem;
     height: 4rem;
-    border: 3px dashed #cbd5e1;
+    border: 3px dashed var(--slate-300);
     background: rgb(248 250 252 / 0.85);
   }
 
@@ -1003,9 +1003,9 @@ h2 {
   }
 
   .increment-bubble {
-    background: #dcfce7;
-    border: 2px solid #22c55e;
-    color: #166534;
+    background: var(--green-100);
+    border: 2px solid var(--green-500);
+    color: var(--green-800);
     animation: increment-bubble-pop 600ms ease-out forwards;
   }
 
@@ -1013,7 +1013,7 @@ h2 {
     0% {
       transform: scale(1);
       box-shadow: none;
-      border-color: #cbd5e1;
+      border-color: var(--slate-300);
       background: rgb(248 250 252 / 0.85);
     }
 
@@ -1022,22 +1022,22 @@ h2 {
       box-shadow:
         0 0 0 5px rgb(34 197 94 / 0.22),
         0 8px 18px rgb(34 197 94 / 0.22);
-      border-color: #22c55e;
-      background: #dcfce7;
+      border-color: var(--green-500);
+      background: var(--green-100);
     }
 
     100% {
       transform: scale(1);
       box-shadow: none;
-      border-color: #cbd5e1;
+      border-color: var(--slate-300);
       background: rgb(248 250 252 / 0.85);
     }
   }
 
   .decrement-bubble {
-    background: #fee2e2;
-    border: 2px solid #ef4444;
-    color: #991b1b;
+    background: var(--red-100);
+    border: 2px solid var(--red-500);
+    color: var(--red-800);
     animation: modify-bubble-pop 600ms ease-out forwards;
   }
 
@@ -1045,17 +1045,17 @@ h2 {
     0% {
       transform: scale(1);
       box-shadow: none;
-      border-color: #cbd5e1;
+      border-color: var(--slate-300);
       background: rgb(248 250 252 / 0.85);
     }
 
     25% {
       transform: scale(0.94);
       box-shadow:
-        0 0 0 5px rgb(239 68 68 / 0.2),
-        0 8px 18px rgb(239 68 68 / 0.18);
-      border-color: #ef4444;
-      background: #fee2e2;
+        0 0 0 5px r0 8px 18px color-mix(in srgb, var(--red-500) 28%, transparent),
+        0 8px 18px color-mix(in srgb, var(--red-500) 18%, transparent);
+      border-color: var(--red-500);
+      background: var(--red-100);
     }
 
     60% {
@@ -1065,7 +1065,7 @@ h2 {
     100% {
       transform: scale(1);
       box-shadow: none;
-      border-color: #cbd5e1;
+      border-color: var(--slate-300);
       background: rgb(248 250 252 / 0.85);
     }
   }
