@@ -285,10 +285,10 @@
   }
 
   .palette {
-    border: 2px solid #ddd;
+    border: 2px solid var(--gray-300);
     border-radius: 12px;
     padding: 1rem;
-    background: color-mix(in srgb, #f8fafc 75%, transparent);
+    background: color-mix(in srgb, var(--slate-50) 75%, transparent);
     backdrop-filter: blur(2px);
   }
 
@@ -299,7 +299,7 @@
 
   .trash-drop-zone {
     margin-top: 1rem;
-    min-height: 72px;
+    min-height: 4rem;
     padding: 0.75rem;
     border: 2px dashed transparent;
     border-radius: 12px;
@@ -339,9 +339,9 @@
     min-height: 0;
     width: 20rem;
     overflow: auto;
-    border: 2px solid #ddd;
+    border: 2px solid var(--gray-300);
     border-radius: 0.7rem;
-    background: color-mix(in srgb, #f8fafc 75%, transparent);
+    background: color-mix(in srgb, var(--slate-50) 75%, transparent);
     backdrop-filter: blur(2px);
     overflow-y: auto;
     overflow-x: hidden;
@@ -386,9 +386,9 @@
   .empty-drop-zone {
     width: 12rem;
     height: 5rem;
-    border: 2px dashed #aaa;
+    border: 2px dashed var(--gray-400);
     border-radius: 0.75rem;
-    color: #666;
+    color: var(--gray-500);
     background: white;
     display: grid;
     place-items: center;
@@ -400,10 +400,11 @@
 
   .end-drop-zone {
     width: 12rem;
-    height: 2.5rem;
-    border: 2px dashed #bbb;
+    height: 4.5rem;
+    min-height: 4.5rem;
+    border: 2px dashed var(--gray-300);
     border-radius: 10px;
-    color: #888;
+    color: var(--gray-400);
     background: rgb(255 255 255 / 0.5);
     display: grid;
     place-items: center;
@@ -411,7 +412,7 @@
   }
 
   .end-drop-zone:global(.drag-over) {
-    height: 3rem;
+    height: 5rem;
     outline: 2px dashed var(--green-500);
   }
 
